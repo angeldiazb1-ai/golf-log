@@ -175,14 +175,28 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 </div>
 </section>
 
-<footer>Golf Log · B1.1 (zonas fijas) · PWA</footer>
+<footer>Golf Log · B1.2 (eval ±5% por palo + zonas fijas) · PWA</footer>
 
 <script>
 /* ===== ESTADO ===== */
 const STORAGE="golf-log-data";
 let state=JSON.parse(localStorage.getItem(STORAGE))||{
-  modo:"range",palo:"Driver",dir:"Centro",zonaKey:null,shots:[]
+  modo:"range",
+  palo:"Driver",
+  dir:"Centro",
+  zonaKey:null,
+  shots:[],
+  // Referencias iniciales (edítalas si lo deseas). Se usan hasta que el palo tenga suficiente historial.
+  clubRef:{
+    "Driver":200,"H3":185,"H4":175,"5i":165,"6i":155,"7i":145,"8i":135,"9i":125,"PW":110,"SW56":85,"Putter":5
+  }
 };
+
+// Migración simple (por si existían datos guardados sin clubRef)
+if(!state.clubRef){
+  state.clubRef={"Driver":200,"H3":185,"H4":175,"5i":165,"6i":155,"7i":145,"8i":135,"9i":125,"PW":110,"SW56":85,"Putter":5};
+}
+
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state));}
 
 /* ===== MODO ===== */
@@ -205,8 +219,8 @@ function group(sel,cb){
     };
   });
 }
-group("#paloButtons .seg-btn",v=>state.palo=v);
-group("#direccionButtons .seg-btn",v=>state.dir=v);
+group("#paloButtons .seg-btn",v=>{state.palo=v; save(); render();});
+group("#direccionButtons .seg-btn",v=>{state.dir=v; save(); render();});
 
 /* ===== ZONAS FIJAS 0–300 ===== */
 const zonaSelect=document.getElementById("zonaSelect");
@@ -237,10 +251,43 @@ function evalZona(m){
   return{l:"OK",c:"ok"};
 }
 
+
+/* ===== EVALUACIÓN POR PALO (±5%) =====
+Regla: Range / Evaluación / Objetivo evalúan por palo con tolerancia ±5% del target.
+- Target inicial: state.clubRef[palo]
+- Aprendizaje: cuando hay ≥10 tiros del palo (no-Zona), el target se calcula por promedio.
+*/
+function clubShots(palo){
+  return state.shots.filter(s=>s.palo===palo && typeof s.m==="number" && s.m>0 && s.modo!=="zona");
+}
+function clubTarget(palo){
+  const shots=clubShots(palo);
+  const learned=shots.length>=10;
+  if(learned){
+    const avg=shots.reduce((a,s)=>a+s.m,0)/shots.length;
+    return {target:avg, learned:true, n:shots.length};
+  }
+  // Si hay pocos tiros, usa promedio parcial (≥3) si existe, si no, referencia fija
+  if(shots.length>=3){
+    const avg=shots.reduce((a,s)=>a+s.m,0)/shots.length;
+    return {target:avg, learned:false, n:shots.length};
+  }
+  return {target:(state.clubRef?.[palo] ?? 0), learned:false, n:shots.length};
+}
+function evalClub(m,palo){
+  const info=clubTarget(palo);
+  const t=info.target || 0;
+  if(!t) return {l:"—",c:"neutral",meta:info};
+  const tol=t*0.05;
+  if(m < (t - tol)) return {l:"Corto",c:"bad",meta:info};
+  if(m > (t + tol)) return {l:"Largo",c:"bad",meta:info};
+  return {l:"OK",c:"ok",meta:info};
+}
+
 /* ===== GUARDAR ===== */
 guardarBtn.onclick=()=>{
   const m=Number(distancia.value);if(!m)return;
-  const e=state.modo==="zona"?evalZona(m):{l:"—",c:"neutral"};
+  const e=(state.modo==="zona") ? evalZona(m) : evalClub(m,state.palo);
   state.shots.push({modo:state.modo,palo:state.palo,dir:state.dir,m,eval:e});
   distancia.value="";save();render();
 };
@@ -259,7 +306,7 @@ function render(){
   });
   if(state.shots.length){
     const u=state.shots[state.shots.length-1];
-    ultimoInfo.innerHTML=`Último: ${u.m} m → <span class="badge ${u.eval.c}">${u.eval.l}</span>`;
+    ultimoInfo.innerHTML=`Último: ${u.m} m → <span class="badge ${u.eval.c}">${u.eval.l}</span>` + (u.eval?.meta ? ` <span style="color:var(--muted);font-size:12px;">(target ${Math.round(u.eval.meta.target||0)} · n=${u.eval.meta.n}${u.eval.meta.learned?" ✓":""})</span>` : "");
   }
 }
 render();
