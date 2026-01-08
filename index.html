@@ -173,7 +173,48 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 </div>
 </section>
 
-<footer>Golf Log · B3.0 (dispersión por sesión) · PWA</footer>
+
+<!-- RESUMEN POR PALO -->
+<section class="card" id="clubStatsCard">
+<h2>Resumen por palo (Totales)</h2>
+<div class="pill" style="margin-top:0;">
+  <span>Incluye:</span><strong>solo tiros NO-Zona</strong>
+</div>
+
+<div class="pill" style="margin-top:10px;"><span>Ref fija:</span><strong>tabla de alcances</strong></div>
+  <div class="pill">
+    <span>Alcance ref (m)</span>
+    <input id="targetClubInput" inputmode="numeric" placeholder="Ej. 165" style="max-width:160px;">
+  </div>
+  <div class="row" style="margin-top:10px;">
+    <button id="saveTargetBtn" class="action" style="background:var(--accent);color:#062317;">Guardar alcance</button>
+    <button id="closeTargetsBtn" class="action" style="background:#334155;color:#e2e8f0;">Cerrar</button>
+  </div>
+  <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.3;">
+    Tip: esto es tu “alcance objetivo” por palo (de tu tabla). El resumen mostrará Δ vs promedio.
+  </div>
+</div>
+
+<div class="tableWrap" style="margin-top:12px;">
+<table style="min-width:720px;">
+<thead>
+<tr>
+  <th>Palo</th>
+  <th>n</th>
+  <th>Min</th>
+  <th>Prom</th>
+  <th>Max</th>
+  <th>Ref (rango)</th>
+  <th>Δ Prom-Ref(mid)</th>
+</tr>
+</thead>
+<tbody id="clubStatsBody"></tbody>
+</table>
+</div>
+
+</section>
+
+<footer>Golf Log · B4.1 (resumen por palo + refs fijas) · PWA</footer>
 
 <script>
 /* ===== ESTADO / STORAGE ===== */
@@ -202,6 +243,28 @@ let state = (()=>{
   }
   if(typeof s.nextSessionNum !== "number") s.nextSessionNum = (s.session?.n || 1) + 1;
   if(!s.historyView) s.historyView = "session";
+
+
+  // Alcances de referencia (tabla fija del usuario). Se aplican siempre como preset.
+  const PRESET_RANGES = {
+    "SW56": {min:0, max:75,  label:"Sand"},
+    "PW":   {min:115, max:135, label:"Pitching"},
+    "9i":   {min:140, max:155, label:"9 Iron"},
+    "8i":   {min:145, max:155, label:"8 Iron"},
+    "7i":   {min:155, max:165, label:"7 Iron"},
+    "6i":   {min:160, max:175, label:"6 Iron"},
+    "5i":   {min:185, max:200, label:"5 Iron"},
+    "H4":   {min:190, max:215, label:"4 Iron"},
+    "H3":   {min:200, max:225, label:"3 Wood"}
+    // Driver: sin dato (no hit a playable ball)
+  };
+  s.clubRanges = PRESET_RANGES;
+  // targets = midpoint de cada rango (fijo)
+  s.clubTargets = {};
+  Object.keys(PRESET_RANGES).forEach(k=>{
+    const r = PRESET_RANGES[k];
+    s.clubTargets[k] = Math.round((r.min + r.max)/2);
+  });
 
   // MIGRACIÓN: sessionId en tiros
   s.shots.forEach(sh=>{
@@ -426,6 +489,99 @@ function renderDispersion(sessionShots){
   }
 }
 
+
+/* ===== RESUMEN POR PALO (TOTALES) ===== */
+function clubOrder(){
+  // orden fijo para tabla
+  return ["Driver","H3","H4","5i","6i","7i","8i","9i","PW","SW56","Putter"];
+}
+
+function computeClubStatsTotal(){
+  // Solo NO-Zona por consistencia con evaluación por palo
+  const shots = state.shots.filter(sh=>sh.modo!=="zona" && Number(sh.m)>0);
+  const map = new Map();
+  for(const sh of shots){
+    const club = (sh.palo||"—").trim();
+    const m = Number(sh.m);
+    if(!map.has(club)) map.set(club, {club, n:0, min:m, max:m, sum:0});
+    const st = map.get(club);
+    st.n += 1;
+    st.sum += m;
+    st.min = Math.min(st.min, m);
+    st.max = Math.max(st.max, m);
+  }
+  for(const st of map.values()){
+    st.avg = st.n ? (st.sum / st.n) : 0;
+  }
+  return map;
+}
+
+function renderClubStats(){
+  const body = document.getElementById("clubStatsBody");
+  if(!body) return;
+
+  const map = computeClubStatsTotal();
+  const targets = state.clubTargets || {};
+
+  // construir lista de clubes: primero orden conocido, luego cualquier extra
+  const ordered = clubOrder();
+  const extras = [...map.keys()].filter(k=>!ordered.includes(k)).sort();
+  const clubs = [...ordered, ...extras].filter(c=>map.has(c));
+
+  body.innerHTML = "";
+  if(!clubs.length){
+    body.innerHTML = `<tr><td colspan="7" style="text-align:left;color:var(--muted);padding:10px;">Aún no hay tiros (NO-Zona) para calcular stats por palo.</td></tr>`;
+    return;
+  }
+
+  for(const club of clubs){
+    const st = map.get(club);
+    const ranges = state.clubRanges || {};
+    const r = ranges[club] || null;
+    const ref = (targets && (targets[club]===0 || targets[club])) ? Number(targets[club]) : null; // midpoint fijo
+    const delta = (ref!==null && Number.isFinite(ref)) ? (st.avg - ref) : null;
+
+    const fmt = (x)=> Number.isFinite(x) ? Math.round(x) : "—";
+    const fmtDelta = (d)=>{
+      if(!Number.isFinite(d)) return "—";
+      const s = Math.round(d);
+      return (s>0?`+${s}`:`${s}`);
+    };
+
+    body.innerHTML += `<tr>
+      <td>${club}</td>
+      <td>${st.n}</td>
+      <td>${fmt(st.min)}</td>
+      <td>${fmt(st.avg)}</td>
+      <td>${fmt(st.max)}</td>
+      <td>${r ? `${r.min}–${r.max}` : "—"}</td>
+      <td>${delta!==null ? fmtDelta(delta) : "—"}</td>
+    </tr>`;
+  }
+}
+
+
+  btn.onclick = ()=>{ toggleTargetsPanel(true); loadSelected(); };
+  close.onclick = ()=>{ toggleTargetsPanel(false); };
+  sel.onchange = loadSelected;
+
+  saveBtn.onclick = ()=>{
+    const c = sel.value;
+    const raw = inp.value.trim();
+    if(!state.clubTargets || typeof state.clubTargets!=="object") state.clubTargets = {};
+    if(raw===""){
+      delete state.clubTargets[c];
+    }else{
+      const v = Number(raw);
+      if(Number.isFinite(v) && v>0){
+        state.clubTargets[c] = Math.round(v);
+      }
+    }
+    save();
+    renderClubStats();
+  };
+}
+
 /* ===== RENDER ===== */
 function render(){
   // panels
@@ -477,8 +633,11 @@ function render(){
   // Dispersión SIEMPRE por sesión actual
   const sessionShots = state.shots.filter(sh=>sh.sessionId===state.session.id);
   renderDispersion(sessionShots);
+  // Resumen por palo (Totales)
+  renderClubStats();
 }
 render();
+renderClubStats();
 
 /* ===== SERVICE WORKER ===== */
 if("serviceWorker" in navigator){
