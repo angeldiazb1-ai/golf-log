@@ -6,274 +6,253 @@
   <title>Golf Log</title>
 
   <!-- PWA -->
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0b2f1a">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0b3d2e">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
     :root {
-      --bg1:#062015;
-      --bg2:#0b2f1a;
-      --card:#123b27;
-      --accent:#44e07b;
-      --accent-dark:#1fa35a;
-      --warn:#f5c400;
-      --text:#e8f5ee;
-      --muted:#9fbdb0;
+      --bg-dark: #061d14;
+      --bg-card: #123a2a;
+      --bg-soft: #1b4d38;
+      --accent: #4ade80;
+      --warning: #facc15;
+      --text-main: #e6f4ec;
+      --text-dim: #b7d6c7;
+      --radius: 18px;
     }
 
-    * { box-sizing:border-box; }
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
     body {
-      margin:0;
-      font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
-      color:var(--text);
-      background:
-        radial-gradient(1200px 800px at 50% -200px, #144a32 0%, var(--bg2) 40%, var(--bg1) 100%);
-      min-height:100vh;
+      margin: 0;
+      padding: 24px 16px 48px;
+      background: radial-gradient(circle at top, #0f5132, var(--bg-dark));
+      color: var(--text-main);
     }
 
     h1 {
-      padding:20px 20px 8px;
-      margin:0;
-      font-size:32px;
-      font-weight:700;
+      margin: 12px 0 24px;
+      font-size: 42px;
+      font-weight: 800;
     }
 
-    .container {
-      padding:0 16px 40px;
-      max-width:480px;
-      margin:0 auto;
+    h2 {
+      margin: 0 0 12px;
+      font-size: 22px;
     }
 
     .card {
-      background:linear-gradient(180deg, #163f2b, var(--card));
-      border-radius:18px;
-      padding:16px;
-      margin-bottom:16px;
-      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      background: linear-gradient(180deg, var(--bg-soft), var(--bg-card));
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 22px;
     }
 
-    .title {
-      font-size:20px;
-      font-weight:600;
-      margin-bottom:12px;
+    .segmented {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .row { display:flex; flex-wrap:wrap; gap:10px; }
-
-    button {
-      border:0;
-      border-radius:14px;
-      padding:12px 16px;
-      font-size:16px;
-      color:var(--text);
-      background:#1b4d35;
+    .seg-btn {
+      flex: 1;
+      min-width: 90px;
+      padding: 12px;
+      border-radius: 14px;
+      border: none;
+      background: #1e5b43;
+      color: var(--text-main);
+      font-size: 18px;
     }
 
-    button.active {
-      background:var(--accent);
-      color:#052014;
-      font-weight:700;
-    }
-
-    button.primary {
-      background:var(--accent);
-      color:#052014;
-      font-weight:700;
-      flex:1;
-    }
-
-    button.warn {
-      background:var(--warn);
-      color:#3b2a00;
-      font-weight:700;
-      flex:1;
+    .seg-btn.active {
+      background: var(--accent);
+      color: #062317;
+      font-weight: 700;
     }
 
     input {
-      width:100%;
-      padding:14px;
-      font-size:18px;
-      border-radius:14px;
-      border:2px solid #2a6b4b;
-      background:#0c2a1c;
-      color:var(--text);
-      outline:none;
+      width: 100%;
+      padding: 14px;
+      font-size: 20px;
+      border-radius: 14px;
+      border: 2px solid #2e7d5b;
+      background: #0d2f22;
+      color: var(--text-main);
     }
 
-    .small { color:var(--muted); font-size:14px; }
-
-    table {
-      width:100%;
-      border-collapse:collapse;
-      font-size:14px;
+    .row {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
     }
 
-    th, td {
-      padding:6px 4px;
-      text-align:left;
-      border-bottom:1px solid #245b40;
+    button.action {
+      flex: 1;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 14px;
+      border: none;
+      font-weight: 700;
     }
 
-    .bar {
-      height:10px;
-      background:#1b4d35;
-      border-radius:6px;
-      overflow:hidden;
+    #guardarBtn {
+      background: var(--accent);
+      color: #062317;
     }
 
-    .bar span {
-      display:block;
-      height:100%;
-      background:var(--accent);
+    #deshacerBtn {
+      background: var(--warning);
+      color: #3a2a00;
+    }
+
+    .info {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--text-dim);
     }
   </style>
 </head>
 
 <body>
 
-<h1>Golf Log</h1>
-
-<div class="container">
+  <h1>Golf Log</h1>
 
   <!-- MODO -->
-  <div class="card">
-    <div class="row">
-      <button class="active">Range</button>
-      <button>Zona</button>
-      <button>Evaluación</button>
-      <button>Objetivo</button>
+  <section class="card">
+    <div class="segmented" id="modoButtons">
+      <button type="button" class="seg-btn active" data-modo="range">Range</button>
+      <button type="button" class="seg-btn" data-modo="zona">Zona</button>
+      <button type="button" class="seg-btn" data-modo="evaluacion">Evaluación</button>
+      <button type="button" class="seg-btn" data-modo="objetivo">Objetivo</button>
     </div>
-  </div>
+  </section>
 
   <!-- PALO -->
-  <div class="card">
-    <div class="title">Palo</div>
-    <div class="row" id="clubButtons"></div>
-  </div>
-
-  <!-- DISTANCIA -->
-  <div class="card">
-    <div class="title">Distancia (m)</div>
-    <input id="distance" type="number" placeholder="Ej. 183">
-    <div class="row" style="margin-top:12px">
-      <button class="primary" onclick="saveShot()">Guardar golpe</button>
-      <button class="warn" onclick="undo()">Deshacer</button>
+  <section class="card">
+    <h2>Palo</h2>
+    <div class="segmented" id="paloButtons">
+      <button type="button" class="seg-btn active">Driver</button>
+      <button type="button" class="seg-btn">H3</button>
+      <button type="button" class="seg-btn">H4</button>
+      <button type="button" class="seg-btn">5i</button>
+      <button type="button" class="seg-btn">6i</button>
+      <button type="button" class="seg-btn">7i</button>
+      <button type="button" class="seg-btn">8i</button>
+      <button type="button" class="seg-btn">9i</button>
+      <button type="button" class="seg-btn">PW</button>
+      <button type="button" class="seg-btn">SW56</button>
+      <button type="button" class="seg-btn">Putter</button>
     </div>
-  </div>
+  </section>
 
-  <!-- DIRECCIÓN -->
-  <div class="card">
-    <div class="title">Dirección</div>
-    <div class="row" id="dirButtons"></div>
-  </div>
+  <!-- DIRECCIÓN (PRIMERO) -->
+  <section class="card">
+    <h2>Dirección</h2>
+    <div class="segmented" id="direccionButtons">
+      <button type="button" class="seg-btn">Izq</button>
+      <button type="button" class="seg-btn active">Centro</button>
+      <button type="button" class="seg-btn">Der</button>
+    </div>
+  </section>
 
-  <!-- DISPERSIÓN -->
-  <div class="card">
-    <div class="title">Dispersión lateral</div>
-    <div class="bar"><span id="dispBar" style="width:0%"></span></div>
-    <div class="small" id="dispText">Izq 0% · Centro 0% · Der 0%</div>
-  </div>
+  <!-- DISTANCIA (DESPUÉS) -->
+  <section class="card">
+    <h2>Distancia (m)</h2>
+    <input id="distancia" inputmode="numeric" placeholder="Ej. 183" />
+    <div class="row">
+      <button id="guardarBtn" class="action" type="button">Guardar golpe</button>
+      <button id="deshacerBtn" class="action" type="button">Deshacer</button>
+    </div>
+    <div class="info" id="lastInfo"></div>
+  </section>
 
-  <!-- HISTORIAL -->
-  <div class="card">
-    <div class="title">Historial (sesión)</div>
-    <table>
-      <thead>
-        <tr><th>#</th><th>Palo</th><th>m</th><th>Dir</th></tr>
-      </thead>
-      <tbody id="history"></tbody>
-    </table>
-  </div>
+  <script>
+    /* ==========================
+       SERVICE WORKER
+       ========================== */
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
 
-</div>
+    /* ==========================
+       ESTADO GLOBAL
+       ========================== */
+    const state = {
+      modo: "range",
+      palo: "Driver",
+      direccion: "Centro",
+      golpes: JSON.parse(localStorage.getItem("golf-log-golpes") || "[]")
+    };
 
-<script>
-/* =============================
-   REGISTRO SERVICE WORKER
-   ============================= */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js");
-  });
-}
+    /* ==========================
+       HELPERS
+       ========================== */
+    function activarGrupo(selector, callback) {
+      document.querySelectorAll(selector).forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const b = e.currentTarget;
+          document.querySelectorAll(selector).forEach(x => x.classList.remove("active"));
+          b.classList.add("active");
+          callback(b.textContent.trim());
+        });
+      });
+    }
 
-/* =============================
-   ESTADO
-   ============================= */
-const clubs = ["Driver","H3","H4","5i","6i","7i","8i","9i","PW","SW56","Putter"];
-const dirs = ["Izq","Centro","Der"];
-let club = "Driver";
-let dir = "Centro";
-let shots = JSON.parse(localStorage.getItem("golfLogShots") || "[]");
+    /* ==========================
+       MODO (FIX iOS)
+       ========================== */
+    document.querySelectorAll("#modoButtons .seg-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const b = e.currentTarget;
+        document.querySelectorAll("#modoButtons .seg-btn")
+          .forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        state.modo = b.dataset.modo;
+      });
+    });
 
-/* =============================
-   UI INIT
-   ============================= */
-const clubWrap = document.getElementById("clubButtons");
-clubs.forEach(c=>{
-  const b=document.createElement("button");
-  b.textContent=c;
-  if(c===club) b.classList.add("active");
-  b.onclick=()=>{ club=c; refresh(); };
-  clubWrap.appendChild(b);
-});
+    /* ==========================
+       PALO Y DIRECCIÓN
+       ========================== */
+    activarGrupo("#paloButtons .seg-btn", v => state.palo = v);
+    activarGrupo("#direccionButtons .seg-btn", v => state.direccion = v);
 
-const dirWrap = document.getElementById("dirButtons");
-dirs.forEach(d=>{
-  const b=document.createElement("button");
-  b.textContent=d;
-  if(d===dir) b.classList.add("active");
-  b.onclick=()=>{ dir=d; refresh(); };
-  dirWrap.appendChild(b);
-});
+    /* ==========================
+       GUARDAR / DESHACER
+       ========================== */
+    document.getElementById("guardarBtn").addEventListener("click", () => {
+      const d = Number(document.getElementById("distancia").value);
+      if (!d) return;
 
-/* =============================
-   LOGIC
-   ============================= */
-function saveShot(){
-  const m = Number(distance.value);
-  if(!m) return;
-  shots.push({club, dir, m, t:Date.now()});
-  localStorage.setItem("golfLogShots", JSON.stringify(shots));
-  distance.value="";
-  render();
-}
+      const golpe = {
+        modo: state.modo,
+        palo: state.palo,
+        direccion: state.direccion,
+        distancia: d,
+        ts: Date.now()
+      };
 
-function undo(){
-  shots.pop();
-  localStorage.setItem("golfLogShots", JSON.stringify(shots));
-  render();
-}
+      state.golpes.push(golpe);
+      localStorage.setItem("golf-log-golpes", JSON.stringify(state.golpes));
+      document.getElementById("distancia").value = "";
 
-function render(){
-  const h=document.getElementById("history");
-  h.innerHTML="";
-  shots.slice().reverse().forEach((s,i)=>{
-    h.innerHTML+=`<tr>
-      <td>${shots.length-i}</td>
-      <td>${s.club}</td>
-      <td>${s.m}</td>
-      <td>${s.dir}</td>
-    </tr>`;
-  });
+      document.getElementById("lastInfo").textContent =
+        `${state.modo.toUpperCase()} · ${state.palo} · ${d} m · ${state.direccion}`;
+    });
 
-  const total=shots.length||1;
-  const l=shots.filter(s=>s.dir==="Izq").length;
-  const c=shots.filter(s=>s.dir==="Centro").length;
-  const r=shots.filter(s=>s.dir==="Der").length;
-  dispBar.style.width=(c/total*100)+"%";
-  dispText.textContent=`Izq ${Math.round(l/total*100)}% · Centro ${Math.round(c/total*100)}% · Der ${Math.round(r/total*100)}%`;
-}
-
-function refresh(){
-  [...clubWrap.children].forEach(b=>b.classList.toggle("active",b.textContent===club));
-  [...dirWrap.children].forEach(b=>b.classList.toggle("active",b.textContent===dir));
-}
-
-render();
-</script>
+    document.getElementById("deshacerBtn").addEventListener("click", () => {
+      state.golpes.pop();
+      localStorage.setItem("golf-log-golpes", JSON.stringify(state.golpes));
+      document.getElementById("lastInfo").textContent = "Último golpe eliminado";
+    });
+  </script>
 
 </body>
 </html>
