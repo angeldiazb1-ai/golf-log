@@ -22,87 +22,43 @@
   --muted:#b7d6c7;
   --radius:18px;
 }
-
 *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;}
 html,body{margin:0;padding:0;background:radial-gradient(circle at top,#0f5132,var(--bg));color:var(--text);overflow-x:hidden;}
-
 h1{font-size:36px;margin:16px 0;}
 h2{margin:0 0 12px;font-size:20px;}
-
-.card{
-  background:linear-gradient(180deg,var(--soft),var(--card));
-  border-radius:var(--radius);
-  padding:18px;
-  margin-bottom:18px;
-}
-
+.card{background:linear-gradient(180deg,var(--soft),var(--card));border-radius:var(--radius);padding:18px;margin-bottom:18px;}
 .segmented{display:flex;flex-wrap:wrap;gap:10px;}
-.seg-btn{
-  flex:1;
-  min-width:90px;
-  padding:12px;
-  border-radius:14px;
-  border:none;
-  background:#1e5b43;
-  color:var(--text);
-  font-size:17px;
-}
+.seg-btn{flex:1;min-width:90px;padding:12px;border-radius:14px;border:none;background:#1e5b43;color:var(--text);font-size:17px;}
 .seg-btn.active{background:var(--accent);color:#062317;font-weight:700;}
-
-input,select{
-  width:100%;
-  padding:14px;
-  font-size:18px;
-  border-radius:14px;
-  border:2px solid #2e7d5b;
-  background:#0d2f22;
-  color:var(--text);
-}
-
-.row{display:flex;gap:12px;margin-top:14px;}
-.action{
-  flex:1;
-  padding:14px;
-  font-size:18px;
-  border-radius:14px;
-  border:none;
-  font-weight:700;
-}
+input,select{width:100%;padding:14px;font-size:18px;border-radius:14px;border:2px solid #2e7d5b;background:#0d2f22;color:var(--text);}
+.row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;}
+.action{flex:1;padding:14px;font-size:18px;border-radius:14px;border:none;font-weight:700;}
 #guardarBtn{background:var(--accent);color:#062317;}
 #deshacerBtn{background:var(--warn);color:#3a2a00;}
-
-.pill{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#0d2f22;
-  border-radius:999px;
-  padding:10px 14px;
-  font-size:14px;
-  margin-top:10px;
-}
-
-.badge{
-  min-width:80px;
-  padding:8px 12px;
-  border-radius:999px;
-  font-weight:700;
-  text-align:center;
-}
+.pill{display:flex;justify-content:space-between;align-items:center;background:#0d2f22;border-radius:999px;padding:10px 14px;font-size:14px;margin-top:10px;gap:10px;}
+.badge{min-width:80px;padding:8px 12px;border-radius:999px;font-weight:700;text-align:center;display:inline-block;}
 .ok{background:var(--accent);color:#062317;}
 .bad{background:var(--danger);}
 .neutral{background:#64748b;}
-
 .tableWrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 table{min-width:620px;width:100%;border-collapse:collapse;font-size:14px;}
 th,td{padding:8px;border-bottom:1px solid #1f5b3f;text-align:center;white-space:nowrap;}
-
+/* Dispersión */
+.dispGrid{display:flex;gap:10px;flex-wrap:wrap;}
+.dispItem{flex:1;min-width:120px;background:#0d2f22;border-radius:14px;padding:12px;}
+.dispItem .k{font-size:12px;color:var(--muted);}
+.dispItem .v{font-size:18px;font-weight:800;margin-top:6px;}
+.barWrap{background:#0d2f22;border-radius:14px;overflow:hidden;height:14px;margin-top:10px;border:1px solid #1f5b3f;}
+.bar{height:100%;display:flex;width:100%;}
+.bar > div{height:100%;}
+.barL{background:var(--danger);}
+.barC{background:var(--accent);}
+.barR{background:var(--danger);opacity:0.75;}
 footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 </style>
 </head>
 
 <body>
-
 <h1>Golf Log</h1>
 
 <!-- MODO -->
@@ -187,94 +143,105 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 </div>
 </section>
 
-<footer>Golf Log · B2.1 (sesiones + fix palo) · PWA</footer>
+<!-- DISPERSIÓN -->
+<section class="card">
+<h2>Dispersión (Sesión)</h2>
+<div class="dispGrid">
+  <div class="dispItem">
+    <div class="k">Izq</div>
+    <div class="v" id="dispL">—</div>
+  </div>
+  <div class="dispItem">
+    <div class="k">Centro</div>
+    <div class="v" id="dispC">—</div>
+  </div>
+  <div class="dispItem">
+    <div class="k">Der</div>
+    <div class="v" id="dispR">—</div>
+  </div>
+</div>
+<div class="barWrap" aria-label="barra de dispersión">
+  <div class="bar">
+    <div class="barL" id="barL" style="width:0%"></div>
+    <div class="barC" id="barC" style="width:0%"></div>
+    <div class="barR" id="barR" style="width:0%"></div>
+  </div>
+</div>
+<div class="pill" style="margin-top:10px;">
+  <span>Sesgo (Izq↔Der):</span>
+  <strong id="dispBias">—</strong>
+</div>
+</section>
+
+<footer>Golf Log · B3.0 (dispersión por sesión) · PWA</footer>
 
 <script>
-/* ===== ESTADO ===== */
+/* ===== ESTADO / STORAGE ===== */
 const STORAGE="golf-log-data";
 
 function genSessionId(){
   return "s_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,7);
 }
+function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
 
-let state=JSON.parse(localStorage.getItem(STORAGE))||{
-  modo:"range",
-  palo:"Driver",
-  dir:"Centro",
-  zonaKey:null,
+let state = (()=>{
+  let s = null;
+  try{ s = JSON.parse(localStorage.getItem(STORAGE)); }catch(e){}
+  if(!s) s = {};
 
-  // Sesiones
-  session:{ id: genSessionId(), n: 1 },
-  nextSessionNum: 2,
-  historyView:"session", // "session" | "total"
+  // Base
+  if(!Array.isArray(s.shots)) s.shots = [];
+  if(!s.modo) s.modo = "range";
+  if(!s.palo) s.palo = "Driver";
+  if(!s.dir) s.dir = "Centro";
+  if(typeof s.zonaKey === "undefined") s.zonaKey = null;
 
-  // Tiros (totales). Cada tiro lleva sessionId.
-  shots:[],
-
-  // Referencias iniciales (edítalas si lo deseas). Se usan hasta que el palo tenga suficiente historial.
-  clubRef:{
-    "Driver":200,"H3":185,"H4":175,"5i":165,"6i":155,"7i":145,"8i":135,"9i":125,"PW":110,"SW56":85,"Putter":5
+  // Sesiones (nuevo formato)
+  if(!s.session || !s.session.id){
+    s.session = { id: genSessionId(), n: 1 };
   }
-};
+  if(typeof s.nextSessionNum !== "number") s.nextSessionNum = (s.session?.n || 1) + 1;
+  if(!s.historyView) s.historyView = "session";
 
-// Migraciones / defaults
-if(!state.clubRef){
-  state.clubRef={"Driver":200,"H3":185,"H4":175,"5i":165,"6i":155,"7i":145,"8i":135,"9i":125,"PW":110,"SW56":85,"Putter":5};
-}
-if(!state.session){
-  state.session={ id: genSessionId(), n: 1 };
-}
-if(!state.nextSessionNum){
-  state.nextSessionNum = (state.session?.n || 1) + 1;
-}
-if(!state.historyView){
-  state.historyView = "session";
-}
-// Si hay tiros previos sin sessionId, asignarlos a una sesión "legacy"
-if(Array.isArray(state.shots) && state.shots.length){
-  let needsLegacy = false;
-  for(const sh of state.shots){
-    if(!sh.sessionId){ needsLegacy = true; sh.sessionId = "legacy"; }
-  }
-  if(needsLegacy){
-    state.session = { id:"legacy", n:1 };
-    state.nextSessionNum = 2;
-  }
-}
-
-
-// Compatibilidad con versiones anteriores que usaban state.sessionId (número) en vez de state.session.id
-if(state.sessionId && (!state.session || !state.session.id)){
-  const sid = String(state.sessionId);
-  state.session = { id: sid, n: 1 };
-  if(!state.nextSessionNum) state.nextSessionNum = 2;
-}
-// Normalizar sessionId a string para evitar que 1 !== "1"
-if(Array.isArray(state.shots) && state.shots.length){
-  for(const sh of state.shots){
-    if(sh.sessionId !== undefined && sh.sessionId !== null){
-      sh.sessionId = String(sh.sessionId);
+  // MIGRACIÓN: sessionId en tiros
+  s.shots.forEach(sh=>{
+    if(!sh.sessionId){
+      sh.sessionId = s.session.id;
+    }else if(typeof sh.sessionId !== "string"){
+      sh.sessionId = "legacy_" + String(sh.sessionId);
     }
-  }
-  if(state.session && state.session.id){
-    state.session.id = String(state.session.id);
-  }
-  // Si la sesión actual no tiene tiros, adopta la sesión del último tiro
-  const lastSid = state.shots[state.shots.length-1].sessionId;
-  const hasInCurrent = state.shots.some(sh => sh.sessionId === state.session.id);
-  if(lastSid && !hasInCurrent){
-    state.session.id = lastSid;
-  }
-}
-function save(){localStorage.setItem(STORAGE,JSON.stringify(state));}
+    // asegurar estructura mínima
+    if(!sh.dir) sh.dir = "Centro";
+    if(!sh.palo) sh.palo = "Driver";
+    if(!sh.modo) sh.modo = "range";
+  });
 
+  // Si la sesión actual no tiene tiros pero hay tiros, apuntar a la última sesión existente
+  const hasCurrent = s.shots.some(sh=>sh.sessionId===s.session.id);
+  if(!hasCurrent && s.shots.length){
+    const last = s.shots[s.shots.length-1];
+    s.session.id = last.sessionId;
+  }
+
+  return s;
+})();
+
+function save(){ localStorage.setItem(STORAGE, JSON.stringify(state)); }
+
+/* ===== HELPERS UI ⇄ ESTADO ===== */
 function syncPaloFromUI(){
-  const active = document.querySelector("#paloButtons .seg-btn.active");
-  if(active){
-    state.palo = active.textContent.trim();
-  }
+  const a = document.querySelector("#paloButtons .seg-btn.active");
+  if(a) state.palo = a.textContent.trim();
 }
-
+function syncDirFromUI(){
+  const a = document.querySelector("#direccionButtons .seg-btn.active");
+  if(a) state.dir = a.textContent.trim();
+}
+function setActiveByText(selector, value){
+  document.querySelectorAll(selector).forEach(btn=>{
+    btn.classList.toggle("active", btn.textContent.trim()===value);
+  });
+}
 
 /* ===== MODO ===== */
 document.querySelectorAll("#modoButtons .seg-btn").forEach(b=>{
@@ -283,56 +250,30 @@ document.querySelectorAll("#modoButtons .seg-btn").forEach(b=>{
     b.classList.add("active");
     state.modo=b.dataset.modo;
     zonaPanel.style.display=state.modo==="zona"?"block":"none";
-    save();render();
+    save(); render();
   };
 });
 
 /* ===== BOTONES GENÉRICOS ===== */
-function group(sel,cb){
+function group(sel, cb){
   document.querySelectorAll(sel).forEach(b=>{
     b.onclick=()=>{
       document.querySelectorAll(sel).forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");cb(b.textContent);
+      b.classList.add("active");
+      cb(b.textContent.trim());
+      save(); // persistir selección también
     };
   });
 }
-group("#paloButtons .seg-btn",v=>{state.palo=v; save(); render();});
-group("#direccionButtons .seg-btn",v=>{state.dir=v; save(); render();});
-
-
-/* ===== HISTORIAL (SESIÓN / TOTALES) ===== */
-const sesionInfo=document.getElementById("sesionInfo");
-
-function setHistView(view){
-  state.historyView=view;
-  document.querySelectorAll("#histViewButtons .seg-btn").forEach(x=>{
-    x.classList.toggle("active", x.dataset.view===view);
-  });
-}
-
-document.querySelectorAll("#histViewButtons .seg-btn").forEach(b=>{
-  b.onclick=()=>{
-    setHistView(b.dataset.view);
-    save();render();
-  };
-});
-
-nuevaSesionBtn.onclick=()=>{
-    syncPaloFromUI();
-const n = state.nextSessionNum || ((state.session?.n||1)+1);
-  state.session = { id: genSessionId(), n };
-  state.nextSessionNum = n + 1;
-  // Al crear sesión nueva, nos quedamos viendo "Sesión"
-  setHistView("session");
-  save();render();
-};
+group("#paloButtons .seg-btn", v=> state.palo=v);
+group("#direccionButtons .seg-btn", v=> state.dir=v);
 
 /* ===== ZONAS FIJAS 0–300 ===== */
 const zonaSelect=document.getElementById("zonaSelect");
 const zonaActual=document.getElementById("zonaActual");
 
 function zonesFixed(step=15,max=300){
-  const z=[];let n=1;
+  const z=[]; let n=1;
   for(let s=0;s<max;s+=step){
     z.push({key:`Z${n}`,min:s,max:Math.min(max,s+step),label:`Z${n}: ${s}–${Math.min(max,s+step)} m`});
     n++;
@@ -341,122 +282,208 @@ function zonesFixed(step=15,max=300){
 }
 function updateZona(){
   const zs=zonesFixed();
-  zonaSelect.innerHTML=`<option value="">Selecciona zona…</option>`+
+  zonaSelect.innerHTML = `<option value="">Selecciona zona…</option>` +
     zs.map(z=>`<option value="${z.key}" ${state.zonaKey===z.key?"selected":""}>${z.label}</option>`).join("");
-  const z=zs.find(x=>x.key===state.zonaKey);
-  zonaActual.textContent=z?z.label:"—";
+  const z = zs.find(x=>x.key===state.zonaKey);
+  zonaActual.textContent = z ? z.label : "—";
 }
-zonaSelect.onchange=e=>{state.zonaKey=e.target.value||null;save();render();};
+zonaSelect.onchange=e=>{ state.zonaKey=e.target.value||null; save(); render(); };
 
 function evalZona(m){
-  const z=zonesFixed().find(x=>x.key===state.zonaKey);
-  if(!z)return{l:"—",c:"neutral"};
-  if(m<z.min)return{l:"Corto",c:"bad"};
-  if(m>z.max)return{l:"Largo",c:"bad"};
-  return{l:"OK",c:"ok"};
+  const z = zonesFixed().find(x=>x.key===state.zonaKey);
+  if(!z) return {l:"—",c:"neutral"};
+  if(m<z.min) return {l:"Corto",c:"bad"};
+  if(m>z.max) return {l:"Largo",c:"bad"};
+  return {l:"OK",c:"ok"};
 }
 
-
-/* ===== EVALUACIÓN POR PALO (±5%) =====
-Regla: Range / Evaluación / Objetivo evalúan por palo con tolerancia ±5% del target.
-- Target inicial: state.clubRef[palo]
-- Aprendizaje: cuando hay ≥10 tiros del palo (no-Zona), el target se calcula por promedio.
-*/
-function clubShots(palo){
-  return state.shots.filter(s=>s.palo===palo && typeof s.m==="number" && s.m>0 && s.modo!=="zona");
-}
-function clubTarget(palo){
-  const shots=clubShots(palo);
-  const learned=shots.length>=10;
-  if(learned){
-    const avg=shots.reduce((a,s)=>a+s.m,0)/shots.length;
-    return {target:avg, learned:true, n:shots.length};
-  }
-  // Si hay pocos tiros, usa promedio parcial (≥3) si existe, si no, referencia fija
-  if(shots.length>=3){
-    const avg=shots.reduce((a,s)=>a+s.m,0)/shots.length;
-    return {target:avg, learned:false, n:shots.length};
-  }
-  return {target:(state.clubRef?.[palo] ?? 0), learned:false, n:shots.length};
-}
-function evalClub(m,palo){
-  const info=clubTarget(palo);
-  const t=info.target || 0;
-  if(!t) return {l:"—",c:"neutral",meta:info};
-  const tol=t*0.05;
-  if(m < (t - tol)) return {l:"Corto",c:"bad",meta:info};
-  if(m > (t + tol)) return {l:"Largo",c:"bad",meta:info};
-  return {l:"OK",c:"ok",meta:info};
+/* ===== EVALUACIÓN ±5% POR PALO (no-Zona) ===== */
+function statsByClub(){
+  // solo tiros NO-Zona, porque Zona se evalúa distinto
+  const map = {};
+  state.shots.filter(sh=>sh.modo!=="zona").forEach(sh=>{
+    const club = sh.palo || "—";
+    if(!map[club]) map[club] = {n:0,sum:0};
+    map[club].n += 1;
+    map[club].sum += Number(sh.m)||0;
+  });
+  return map;
 }
 
-/* ===== GUARDAR ===== */
+function evalClub(m, club){
+  const st = statsByClub()[club] || {n:0,sum:0};
+  // target base: si no hay tiros, usar la propia distancia como target (neutral)
+  const learned = st.n >= 10;
+  const target = learned ? (st.sum / st.n) : (st.n>0 ? (st.sum / st.n) : m);
+  const tol = target * 0.05;
+
+  let res = {l:"OK",c:"ok"};
+  if(m < target - tol) res = {l:"Corto",c:"bad"};
+  if(m > target + tol) res = {l:"Largo",c:"bad"};
+
+  // meta para mostrar en "Último"
+  res.meta = { target, tol, n: st.n, learned };
+  return res;
+}
+
+/* ===== HISTORIAL VIEW ===== */
+function setHistView(v){
+  state.historyView = v;
+  document.querySelectorAll("#histViewButtons .seg-btn").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.view===v);
+  });
+  save();
+}
+
+document.querySelectorAll("#histViewButtons .seg-btn").forEach(btn=>{
+  btn.onclick=()=>{ setHistView(btn.dataset.view); render(); };
+});
+
+/* ===== SESIONES ===== */
+function nuevaSesion(){
+  syncPaloFromUI();
+  syncDirFromUI();
+  state.session = { id: genSessionId(), n: state.nextSessionNum };
+  state.nextSessionNum += 1;
+  save(); render();
+}
+nuevaSesionBtn.onclick = nuevaSesion;
+
+/* ===== GUARDAR / DESHACER ===== */
 guardarBtn.onclick=()=>{
-    syncPaloFromUI();
-const m=Number(distancia.value);if(!m)return;
-  const e=(state.modo==="zona") ? evalZona(m) : evalClub(m,state.palo);
-  state.shots.push({sessionId: state.session.id, modo:state.modo,palo:state.palo,dir:state.dir,m,eval:e});
-  distancia.value="";save();render();
+  syncPaloFromUI();
+  syncDirFromUI();
+
+  const m = Number(distancia.value);
+  if(!m || m<=0) return;
+
+  const e = (state.modo==="zona")
+    ? evalZona(m)
+    : evalClub(m, state.palo);
+
+  state.shots.push({
+    modo: state.modo,
+    palo: state.palo,
+    dir: state.dir,
+    m,
+    eval: e,
+    sessionId: state.session.id,
+    t: Date.now()
+  });
+
+  distancia.value="";
+  save(); render();
 };
 
-function undoLastInSession(){
+deshacerBtn.onclick=()=>{
   for(let i=state.shots.length-1;i>=0;i--){
     if(state.shots[i].sessionId===state.session.id){
       state.shots.splice(i,1);
-      return true;
+      break;
     }
   }
-  return false;
+  save(); render();
+};
+
+/* ===== DISPERSIÓN POR SESIÓN ===== */
+function renderDispersion(sessionShots){
+  const total = sessionShots.length;
+  const counts = {Izq:0, Centro:0, Der:0};
+  sessionShots.forEach(sh=>{
+    const d = (sh.dir||"Centro").trim();
+    if(d==="Izq") counts.Izq++;
+    else if(d==="Der") counts.Der++;
+    else counts.Centro++;
+  });
+
+  function fmt(k){
+    if(!total) return "—";
+    const pct = Math.round((counts[k]/total)*100);
+    return `${pct}% (${counts[k]})`;
+  }
+
+  dispL.textContent = fmt("Izq");
+  dispC.textContent = fmt("Centro");
+  dispR.textContent = fmt("Der");
+
+  const wL = total ? (counts.Izq/total)*100 : 0;
+  const wC = total ? (counts.Centro/total)*100 : 0;
+  const wR = total ? (counts.Der/total)*100 : 0;
+
+  barL.style.width = wL.toFixed(1) + "%";
+  barC.style.width = wC.toFixed(1) + "%";
+  barR.style.width = wR.toFixed(1) + "%";
+
+  // Sesgo: -1 Izq, 0 Centro, +1 Der (promedio)
+  if(!total){
+    dispBias.textContent = "—";
+  }else{
+    const score = (counts.Der - counts.Izq) / total; // -1..+1
+    const pct = Math.round(Math.abs(score)*100);
+    if(score > 0.05) dispBias.textContent = `Hacia Der (+${pct}%)`;
+    else if(score < -0.05) dispBias.textContent = `Hacia Izq (-${pct}%)`;
+    else dispBias.textContent = "Neutral";
+  }
 }
-deshacerBtn.onclick=()=>{undoLastInSession();save();render();};
 
 /* ===== RENDER ===== */
 function render(){
+  // panels
+  zonaPanel.style.display = state.modo==="zona" ? "block" : "none";
+
+  // sincronizar botones activos desde estado (por recargas)
+  document.querySelectorAll("#modoButtons .seg-btn").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.modo===state.modo);
+  });
+  setActiveByText("#paloButtons .seg-btn", state.palo);
+  setActiveByText("#direccionButtons .seg-btn", state.dir);
+
+  // Zona UI
   updateZona();
 
-  
-  // Sincronizar selección de palo (UI ⇄ estado)
-  document.querySelectorAll('#paloButtons .seg-btn').forEach(btn=>{
-    btn.classList.toggle('active', btn.textContent.trim()===state.palo);
-  });
-// Sesión actual (solo etiqueta)
-  if(sesionInfo) sesionInfo.textContent = `S${state.session?.n || 1}`;
+  // Sesión label
+  sesionInfo.textContent = `S${state.session?.n || 1}`;
 
-  // Asegurar estado visual de botones de vista
-  setHistView(state.historyView || "session");
-
-  // Shots para tabla: sesión o totales
+  // Tabla: sesión o totales
   const shotsView = (state.historyView==="total")
     ? state.shots
     : state.shots.filter(sh=>sh.sessionId===state.session.id);
 
-  const h=document.getElementById("history");
-  h.innerHTML="";
-
+  const h = document.getElementById("history");
+  h.innerHTML = "";
   shotsView.slice().reverse().forEach((s,i)=>{
-    h.innerHTML+=`<tr>
-      <td>${shotsView.length-i}</td><td>${s.modo}</td><td>${s.palo}</td>
-      <td>${s.dir}</td><td>${s.m}</td>
-      <td><span class="badge ${s.eval.c}">${s.eval.l}</span></td>
+    h.innerHTML += `<tr>
+      <td>${shotsView.length-i}</td>
+      <td>${s.modo}</td>
+      <td>${s.palo}</td>
+      <td>${s.dir}</td>
+      <td>${s.m}</td>
+      <td><span class="badge ${s.eval?.c || "neutral"}">${s.eval?.l || "—"}</span></td>
     </tr>`;
   });
 
-  // Último golpe = último de la sesión actual
+  // Último (de la sesión actual)
   const lastSessionShot = [...state.shots].reverse().find(sh=>sh.sessionId===state.session.id);
   if(lastSessionShot){
-    const u=lastSessionShot;
+    const u = lastSessionShot;
     const meta = (u.eval && u.eval.meta)
-      ? ` <span style="color:var(--muted);">(target=${Math.round(u.eval.meta.target||0)} · n=${u.eval.meta.n}${u.eval.meta.learned?" ✓":""})</span>`
+      ? ` <span style="color:var(--muted);">(target=${Math.round(u.eval.meta.target)} · n=${u.eval.meta.n}${u.eval.meta.learned?" ✓":""})</span>`
       : "";
-    ultimoInfo.innerHTML=`Último: ${u.m} m → <span class="badge ${u.eval.c}">${u.eval.l}</span>` + meta;
+    ultimoInfo.innerHTML = `Último: ${u.m} m → <span class="badge ${u.eval?.c || "neutral"}">${u.eval?.l || "—"}</span>${meta}`;
   }else{
-    ultimoInfo.textContent="Último: —";
+    ultimoInfo.textContent = "Último: —";
   }
+
+  // Dispersión SIEMPRE por sesión actual
+  const sessionShots = state.shots.filter(sh=>sh.sessionId===state.session.id);
+  renderDispersion(sessionShots);
 }
 render();
 
-/* ===== SW ===== */
-if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js");}
+/* ===== SERVICE WORKER ===== */
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js");
+}
 </script>
-
 </body>
 </html>
