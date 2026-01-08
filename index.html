@@ -165,6 +165,18 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 <!-- HISTORIAL -->
 <section class="card">
 <h2>Historial</h2>
+
+<div class="segmented" id="histViewButtons" style="margin-bottom:10px;">
+  <button class="seg-btn active" data-view="session">Sesión</button>
+  <button class="seg-btn" data-view="total">Totales</button>
+</div>
+
+<div class="row" style="margin-top:0;">
+  <button id="nuevaSesionBtn" class="action" style="background:#60a5fa;color:#081827;">Nueva sesión</button>
+</div>
+
+<div class="pill"><span>Sesión actual:</span><strong id="sesionInfo">—</strong></div>
+
 <div class="tableWrap">
 <table>
 <thead>
@@ -180,21 +192,54 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 <script>
 /* ===== ESTADO ===== */
 const STORAGE="golf-log-data";
+
+function genSessionId(){
+  return "s_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,7);
+}
+
 let state=JSON.parse(localStorage.getItem(STORAGE))||{
   modo:"range",
   palo:"Driver",
   dir:"Centro",
   zonaKey:null,
+
+  // Sesiones
+  session:{ id: genSessionId(), n: 1 },
+  nextSessionNum: 2,
+  historyView:"session", // "session" | "total"
+
+  // Tiros (totales). Cada tiro lleva sessionId.
   shots:[],
+
   // Referencias iniciales (edítalas si lo deseas). Se usan hasta que el palo tenga suficiente historial.
   clubRef:{
     "Driver":200,"H3":185,"H4":175,"5i":165,"6i":155,"7i":145,"8i":135,"9i":125,"PW":110,"SW56":85,"Putter":5
   }
 };
 
-// Migración simple (por si existían datos guardados sin clubRef)
+// Migraciones / defaults
 if(!state.clubRef){
   state.clubRef={"Driver":200,"H3":185,"H4":175,"5i":165,"6i":155,"7i":145,"8i":135,"9i":125,"PW":110,"SW56":85,"Putter":5};
+}
+if(!state.session){
+  state.session={ id: genSessionId(), n: 1 };
+}
+if(!state.nextSessionNum){
+  state.nextSessionNum = (state.session?.n || 1) + 1;
+}
+if(!state.historyView){
+  state.historyView = "session";
+}
+// Si hay tiros previos sin sessionId, asignarlos a una sesión "legacy"
+if(Array.isArray(state.shots) && state.shots.length){
+  let needsLegacy = false;
+  for(const sh of state.shots){
+    if(!sh.sessionId){ needsLegacy = true; sh.sessionId = "legacy"; }
+  }
+  if(needsLegacy){
+    state.session = { id:"legacy", n:1 };
+    state.nextSessionNum = 2;
+  }
 }
 
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state));}
@@ -221,6 +266,33 @@ function group(sel,cb){
 }
 group("#paloButtons .seg-btn",v=>{state.palo=v; save(); render();});
 group("#direccionButtons .seg-btn",v=>{state.dir=v; save(); render();});
+
+
+/* ===== HISTORIAL (SESIÓN / TOTALES) ===== */
+const sesionInfo=document.getElementById("sesionInfo");
+
+function setHistView(view){
+  state.historyView=view;
+  document.querySelectorAll("#histViewButtons .seg-btn").forEach(x=>{
+    x.classList.toggle("active", x.dataset.view===view);
+  });
+}
+
+document.querySelectorAll("#histViewButtons .seg-btn").forEach(b=>{
+  b.onclick=()=>{
+    setHistView(b.dataset.view);
+    save();render();
+  };
+});
+
+nuevaSesionBtn.onclick=()=>{
+  const n = state.nextSessionNum || ((state.session?.n||1)+1);
+  state.session = { id: genSessionId(), n };
+  state.nextSessionNum = n + 1;
+  // Al crear sesión nueva, nos quedamos viendo "Sesión"
+  setHistView("session");
+  save();render();
+};
 
 /* ===== ZONAS FIJAS 0–300 ===== */
 const zonaSelect=document.getElementById("zonaSelect");
@@ -288,25 +360,57 @@ function evalClub(m,palo){
 guardarBtn.onclick=()=>{
   const m=Number(distancia.value);if(!m)return;
   const e=(state.modo==="zona") ? evalZona(m) : evalClub(m,state.palo);
-  state.shots.push({modo:state.modo,palo:state.palo,dir:state.dir,m,eval:e});
+  state.shots.push({sessionId: state.session.id, modo:state.modo,palo:state.palo,dir:state.dir,m,eval:e});
   distancia.value="";save();render();
 };
-deshacerBtn.onclick=()=>{state.shots.pop();save();render();};
+
+function undoLastInSession(){
+  for(let i=state.shots.length-1;i>=0;i--){
+    if(state.shots[i].sessionId===state.session.id){
+      state.shots.splice(i,1);
+      return true;
+    }
+  }
+  return false;
+}
+deshacerBtn.onclick=()=>{undoLastInSession();save();render();};
 
 /* ===== RENDER ===== */
 function render(){
   updateZona();
-  const h=document.getElementById("history");h.innerHTML="";
-  state.shots.slice().reverse().forEach((s,i)=>{
+
+  // Sesión actual (solo etiqueta)
+  if(sesionInfo) sesionInfo.textContent = `S${state.session?.n || 1}`;
+
+  // Asegurar estado visual de botones de vista
+  setHistView(state.historyView || "session");
+
+  // Shots para tabla: sesión o totales
+  const shotsView = (state.historyView==="total")
+    ? state.shots
+    : state.shots.filter(sh=>sh.sessionId===state.session.id);
+
+  const h=document.getElementById("history");
+  h.innerHTML="";
+
+  shotsView.slice().reverse().forEach((s,i)=>{
     h.innerHTML+=`<tr>
-      <td>${state.shots.length-i}</td><td>${s.modo}</td><td>${s.palo}</td>
+      <td>${shotsView.length-i}</td><td>${s.modo}</td><td>${s.palo}</td>
       <td>${s.dir}</td><td>${s.m}</td>
       <td><span class="badge ${s.eval.c}">${s.eval.l}</span></td>
     </tr>`;
   });
-  if(state.shots.length){
-    const u=state.shots[state.shots.length-1];
-    ultimoInfo.innerHTML=`Último: ${u.m} m → <span class="badge ${u.eval.c}">${u.eval.l}</span>` + (u.eval?.meta ? ` <span style="color:var(--muted);font-size:12px;">(target ${Math.round(u.eval.meta.target||0)} · n=${u.eval.meta.n}${u.eval.meta.learned?" ✓":""})</span>` : "");
+
+  // Último golpe = último de la sesión actual
+  const lastSessionShot = [...state.shots].reverse().find(sh=>sh.sessionId===state.session.id);
+  if(lastSessionShot){
+    const u=lastSessionShot;
+    const meta = (u.eval && u.eval.meta)
+      ? ` <span style="color:var(--muted);">(target=${Math.round(u.eval.meta.target||0)} · n=${u.eval.meta.n}${u.eval.meta.learned?" ✓":""})</span>`
+      : "";
+    ultimoInfo.innerHTML=`Último: ${u.m} m → <span class="badge ${u.eval.c}">${u.eval.l}</span>` + meta;
+  }else{
+    ultimoInfo.textContent="Último: —";
   }
 }
 render();
