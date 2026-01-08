@@ -176,12 +176,23 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 
 <!-- RESUMEN POR PALO -->
 <section class="card" id="clubStatsCard">
-<h2>Resumen por palo (Totales)</h2>
+<h2>Alcances por palo (Totales)</h2>
 <div class="pill" style="margin-top:0;">
-  <span>Incluye:</span><strong>solo tiros NO-Zona</strong>
+  <span>Base:</span><strong>solo tiros NO-Zona</strong>
+</div>
+<div class="pill" style="margin-top:10px;">
+  <span>Referencia:</span><strong>tabla fija (min–max)</strong>
 </div>
 
-<div class="pill" style="margin-top:10px;"><span>Ref fija:</span><strong>tabla de alcances</strong></div>
+<div class="row" style="margin-top:10px; display:none;">
+  <button id="editTargetsBtn" class="action" style="background:#a78bfa;color:#160b2a;">Configurar alcances</button>
+</div>
+
+<div id="targetsPanel" class="card" style="display:none; margin-top:12px; padding:14px;">
+  <div class="pill" style="margin-top:0;">
+    <span>Palo</span>
+    <select id="targetClubSelect" style="max-width:180px;"></select>
+  </div>
   <div class="pill">
     <span>Alcance ref (m)</span>
     <input id="targetClubInput" inputmode="numeric" placeholder="Ej. 165" style="max-width:160px;">
@@ -201,11 +212,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 <tr>
   <th>Palo</th>
   <th>n</th>
-  <th>Min</th>
-  <th>Prom</th>
-  <th>Max</th>
-  <th>Ref (rango)</th>
-  <th>Δ Prom-Ref(mid)</th>
+  <th>Alcance mínimo</th>
+  <th>Alcance promedio</th>
+  <th>Alcance máximo</th>
+  <th>Alcance por tabla</th>
+  <th>Δ Prom-Tabla(mid)</th>
 </tr>
 </thead>
 <tbody id="clubStatsBody"></tbody>
@@ -214,7 +225,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 
 </section>
 
-<footer>Golf Log · B4.1 (resumen por palo + refs fijas) · PWA</footer>
+<footer>Golf Log · B4.3.1 (fix botones + alcances por palo) · PWA</footer>
 
 <script>
 /* ===== ESTADO / STORAGE ===== */
@@ -244,27 +255,8 @@ let state = (()=>{
   if(typeof s.nextSessionNum !== "number") s.nextSessionNum = (s.session?.n || 1) + 1;
   if(!s.historyView) s.historyView = "session";
 
-
-  // Alcances de referencia (tabla fija del usuario). Se aplican siempre como preset.
-  const PRESET_RANGES = {
-    "SW56": {min:0, max:75,  label:"Sand"},
-    "PW":   {min:115, max:135, label:"Pitching"},
-    "9i":   {min:140, max:155, label:"9 Iron"},
-    "8i":   {min:145, max:155, label:"8 Iron"},
-    "7i":   {min:155, max:165, label:"7 Iron"},
-    "6i":   {min:160, max:175, label:"6 Iron"},
-    "5i":   {min:185, max:200, label:"5 Iron"},
-    "H4":   {min:190, max:215, label:"4 Iron"},
-    "H3":   {min:200, max:225, label:"3 Wood"}
-    // Driver: sin dato (no hit a playable ball)
-  };
-  s.clubRanges = PRESET_RANGES;
-  // targets = midpoint de cada rango (fijo)
-  s.clubTargets = {};
-  Object.keys(PRESET_RANGES).forEach(k=>{
-    const r = PRESET_RANGES[k];
-    s.clubTargets[k] = Math.round((r.min + r.max)/2);
-  });
+  // Alcances de referencia por palo (tabla del usuario). Se pueden configurar en la app.
+  if(!s.clubTargets || typeof s.clubTargets !== "object") s.clubTargets = {};
 
   // MIGRACIÓN: sessionId en tiros
   s.shots.forEach(sh=>{
@@ -286,7 +278,27 @@ let state = (()=>{
     s.session.id = last.sessionId;
   }
 
-  return s;
+  
+  // === ALCANCES FIJOS (PRESET) ===
+  const PRESET_RANGES = {
+    "SW56": {min:0, max:75},
+    "PW":   {min:115, max:135},
+    "9i":   {min:140, max:155},
+    "8i":   {min:145, max:155},
+    "7i":   {min:155, max:165},
+    "6i":   {min:160, max:175},
+    "5i":   {min:185, max:200},
+    "H4":   {min:190, max:215},
+    "H3":   {min:200, max:225}
+  };
+  s.clubRanges = PRESET_RANGES;
+  s.clubTargets = {};
+  Object.keys(PRESET_RANGES).forEach(k=>{
+    const r = PRESET_RANGES[k];
+    s.clubTargets[k] = Math.round((r.min + r.max)/2);
+  });
+
+return s;
 })();
 
 function save(){ localStorage.setItem(STORAGE, JSON.stringify(state)); }
@@ -536,7 +548,6 @@ function renderClubStats(){
 
   for(const club of clubs){
     const st = map.get(club);
-    const ranges = state.clubRanges || {};
     const r = ranges[club] || null;
     const ref = (targets && (targets[club]===0 || targets[club])) ? Number(targets[club]) : null; // midpoint fijo
     const delta = (ref!==null && Number.isFinite(ref)) ? (st.avg - ref) : null;
@@ -560,6 +571,31 @@ function renderClubStats(){
   }
 }
 
+/* ===== CONFIGURAR ALCANCES (REF) ===== */
+function toggleTargetsPanel(show){
+  const p = document.getElementById("targetsPanel");
+  if(!p) return;
+  p.style.display = show ? "block" : "none";
+}
+
+function initTargetsUI(){
+  const btn = document.getElementById("editTargetsBtn");
+  const close = document.getElementById("closeTargetsBtn");
+  const saveBtn = document.getElementById("saveTargetBtn");
+  const sel = document.getElementById("targetClubSelect");
+  const inp = document.getElementById("targetClubInput");
+
+  if(!btn || !close || !saveBtn || !sel || !inp) return;
+
+  // llenar selector
+  const clubs = clubOrder();
+  sel.innerHTML = clubs.map(c=>`<option value="${c}">${c}</option>`).join("");
+
+  function loadSelected(){
+    const c = sel.value;
+    const v = (state.clubTargets||{})[c];
+    inp.value = (v===0 || v) ? String(v) : "";
+  }
 
   btn.onclick = ()=>{ toggleTargetsPanel(true); loadSelected(); };
   close.onclick = ()=>{ toggleTargetsPanel(false); };
@@ -637,6 +673,7 @@ function render(){
   renderClubStats();
 }
 render();
+initTargetsUI();
 renderClubStats();
 
 /* ===== SERVICE WORKER ===== */
