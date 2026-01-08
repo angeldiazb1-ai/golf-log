@@ -22,34 +22,90 @@
   --muted:#b7d6c7;
   --radius:18px;
 }
+
 *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;}
 html,body{margin:0;padding:0;background:radial-gradient(circle at top,#0f5132,var(--bg));color:var(--text);overflow-x:hidden;}
+
 h1{font-size:36px;margin:16px 0;}
 h2{margin:0 0 12px;font-size:20px;}
-.card{background:linear-gradient(180deg,var(--soft),var(--card));border-radius:var(--radius);padding:18px;margin-bottom:18px;}
+
+.card{
+  background:linear-gradient(180deg,var(--soft),var(--card));
+  border-radius:var(--radius);
+  padding:18px;
+  margin-bottom:18px;
+}
+
 .segmented{display:flex;flex-wrap:wrap;gap:10px;}
-.seg-btn{flex:1;min-width:90px;padding:12px;border-radius:14px;border:none;background:#1e5b43;color:var(--text);font-size:17px;}
+.seg-btn{
+  flex:1;
+  min-width:90px;
+  padding:12px;
+  border-radius:14px;
+  border:none;
+  background:#1e5b43;
+  color:var(--text);
+  font-size:17px;
+}
 .seg-btn.active{background:var(--accent);color:#062317;font-weight:700;}
-input,select{width:100%;padding:14px;font-size:18px;border-radius:14px;border:2px solid #2e7d5b;background:#0d2f22;color:var(--text);}
+
+input,select{
+  width:100%;
+  padding:14px;
+  font-size:18px;
+  border-radius:14px;
+  border:2px solid #2e7d5b;
+  background:#0d2f22;
+  color:var(--text);
+}
+
 .row{display:flex;gap:12px;margin-top:14px;}
-.action{flex:1;padding:14px;font-size:18px;border-radius:14px;border:none;font-weight:700;}
+.action{
+  flex:1;
+  padding:14px;
+  font-size:18px;
+  border-radius:14px;
+  border:none;
+  font-weight:700;
+}
 #guardarBtn{background:var(--accent);color:#062317;}
 #deshacerBtn{background:var(--warn);color:#3a2a00;}
-.pill{display:flex;justify-content:space-between;align-items:center;background:#0d2f22;border-radius:999px;padding:10px 14px;font-size:14px;margin-top:10px;}
-.badge{min-width:80px;padding:8px 12px;border-radius:999px;font-weight:700;text-align:center;}
+
+.pill{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#0d2f22;
+  border-radius:999px;
+  padding:10px 14px;
+  font-size:14px;
+  margin-top:10px;
+}
+
+.badge{
+  min-width:80px;
+  padding:8px 12px;
+  border-radius:999px;
+  font-weight:700;
+  text-align:center;
+}
 .ok{background:var(--accent);color:#062317;}
 .bad{background:var(--danger);}
 .neutral{background:#64748b;}
+
 .tableWrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 table{min-width:620px;width:100%;border-collapse:collapse;font-size:14px;}
 th,td{padding:8px;border-bottom:1px solid #1f5b3f;text-align:center;white-space:nowrap;}
+
 footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 </style>
 </head>
 
 <body>
+
 <h1>Golf Log</h1>
 
+<!-- MODO -->
 <section class="card">
   <div class="segmented" id="modoButtons">
     <button class="seg-btn active" data-modo="range">Range</button>
@@ -59,6 +115,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
   </div>
 </section>
 
+<!-- PALO -->
 <section class="card">
 <h2>Palo</h2>
 <div class="segmented" id="paloButtons">
@@ -76,6 +133,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 </div>
 </section>
 
+<!-- ZONA -->
 <section class="card" id="zonaPanel" style="display:none;">
 <h2>Zona</h2>
 <div class="muted">Rango fijo 0–300 m</div>
@@ -83,6 +141,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 <div class="pill"><span>Zona:</span><strong id="zonaActual">—</strong></div>
 </section>
 
+<!-- DIRECCIÓN -->
 <section class="card">
 <h2>Dirección</h2>
 <div class="segmented" id="direccionButtons">
@@ -92,6 +151,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 </div>
 </section>
 
+<!-- DISTANCIA -->
 <section class="card">
 <h2>Distancia (m)</h2>
 <input id="distancia" inputmode="numeric" placeholder="Ej. 183">
@@ -102,8 +162,21 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 <div class="pill" id="ultimoInfo">Último: —</div>
 </section>
 
+<!-- HISTORIAL -->
 <section class="card">
 <h2>Historial</h2>
+
+<div class="segmented" id="histViewButtons" style="margin-bottom:10px;">
+  <button class="seg-btn active" data-view="session">Sesión</button>
+  <button class="seg-btn" data-view="total">Totales</button>
+</div>
+
+<div class="row" style="margin-top:0;">
+  <button id="nuevaSesionBtn" class="action" style="background:#60a5fa;color:#081827;">Nueva sesión</button>
+</div>
+
+<div class="pill"><span>Sesión actual:</span><strong id="sesionInfo">—</strong></div>
+
 <div class="tableWrap">
 <table>
 <thead>
@@ -114,20 +187,96 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 </div>
 </section>
 
-<footer>Golf Log · B2.1 (fix palo activo) · PWA</footer>
+<footer>Golf Log · B2.1 (sesiones + fix palo) · PWA</footer>
 
 <script>
+/* ===== ESTADO ===== */
 const STORAGE="golf-log-data";
+
+function genSessionId(){
+  return "s_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,7);
+}
+
 let state=JSON.parse(localStorage.getItem(STORAGE))||{
-  modo:"range",palo:"Driver",dir:"Centro",zonaKey:null,shots:[],sessionId:1
+  modo:"range",
+  palo:"Driver",
+  dir:"Centro",
+  zonaKey:null,
+
+  // Sesiones
+  session:{ id: genSessionId(), n: 1 },
+  nextSessionNum: 2,
+  historyView:"session", // "session" | "total"
+
+  // Tiros (totales). Cada tiro lleva sessionId.
+  shots:[],
+
+  // Referencias iniciales (edítalas si lo deseas). Se usan hasta que el palo tenga suficiente historial.
+  clubRef:{
+    "Driver":200,"H3":185,"H4":175,"5i":165,"6i":155,"7i":145,"8i":135,"9i":125,"PW":110,"SW56":85,"Putter":5
+  }
 };
+
+// Migraciones / defaults
+if(!state.clubRef){
+  state.clubRef={"Driver":200,"H3":185,"H4":175,"5i":165,"6i":155,"7i":145,"8i":135,"9i":125,"PW":110,"SW56":85,"Putter":5};
+}
+if(!state.session){
+  state.session={ id: genSessionId(), n: 1 };
+}
+if(!state.nextSessionNum){
+  state.nextSessionNum = (state.session?.n || 1) + 1;
+}
+if(!state.historyView){
+  state.historyView = "session";
+}
+// Si hay tiros previos sin sessionId, asignarlos a una sesión "legacy"
+if(Array.isArray(state.shots) && state.shots.length){
+  let needsLegacy = false;
+  for(const sh of state.shots){
+    if(!sh.sessionId){ needsLegacy = true; sh.sessionId = "legacy"; }
+  }
+  if(needsLegacy){
+    state.session = { id:"legacy", n:1 };
+    state.nextSessionNum = 2;
+  }
+}
+
+
+// Compatibilidad con versiones anteriores que usaban state.sessionId (número) en vez de state.session.id
+if(state.sessionId && (!state.session || !state.session.id)){
+  const sid = String(state.sessionId);
+  state.session = { id: sid, n: 1 };
+  if(!state.nextSessionNum) state.nextSessionNum = 2;
+}
+// Normalizar sessionId a string para evitar que 1 !== "1"
+if(Array.isArray(state.shots) && state.shots.length){
+  for(const sh of state.shots){
+    if(sh.sessionId !== undefined && sh.sessionId !== null){
+      sh.sessionId = String(sh.sessionId);
+    }
+  }
+  if(state.session && state.session.id){
+    state.session.id = String(state.session.id);
+  }
+  // Si la sesión actual no tiene tiros, adopta la sesión del último tiro
+  const lastSid = state.shots[state.shots.length-1].sessionId;
+  const hasInCurrent = state.shots.some(sh => sh.sessionId === state.session.id);
+  if(lastSid && !hasInCurrent){
+    state.session.id = lastSid;
+  }
+}
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state));}
 
 function syncPaloFromUI(){
-  const active=document.querySelector("#paloButtons .seg-btn.active");
-  if(active){ state.palo=active.textContent.trim(); }
+  const active = document.querySelector("#paloButtons .seg-btn.active");
+  if(active){
+    state.palo = active.textContent.trim();
+  }
 }
 
+
+/* ===== MODO ===== */
 document.querySelectorAll("#modoButtons .seg-btn").forEach(b=>{
   b.onclick=()=>{
     document.querySelectorAll("#modoButtons .seg-btn").forEach(x=>x.classList.remove("active"));
@@ -138,18 +287,47 @@ document.querySelectorAll("#modoButtons .seg-btn").forEach(b=>{
   };
 });
 
+/* ===== BOTONES GENÉRICOS ===== */
 function group(sel,cb){
   document.querySelectorAll(sel).forEach(b=>{
     b.onclick=()=>{
       document.querySelectorAll(sel).forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      cb(b.textContent.trim());
+      b.classList.add("active");cb(b.textContent);
     };
   });
 }
-group("#paloButtons .seg-btn",v=>state.palo=v);
-group("#direccionButtons .seg-btn",v=>state.dir=v);
+group("#paloButtons .seg-btn",v=>{state.palo=v; save(); render();});
+group("#direccionButtons .seg-btn",v=>{state.dir=v; save(); render();});
 
+
+/* ===== HISTORIAL (SESIÓN / TOTALES) ===== */
+const sesionInfo=document.getElementById("sesionInfo");
+
+function setHistView(view){
+  state.historyView=view;
+  document.querySelectorAll("#histViewButtons .seg-btn").forEach(x=>{
+    x.classList.toggle("active", x.dataset.view===view);
+  });
+}
+
+document.querySelectorAll("#histViewButtons .seg-btn").forEach(b=>{
+  b.onclick=()=>{
+    setHistView(b.dataset.view);
+    save();render();
+  };
+});
+
+nuevaSesionBtn.onclick=()=>{
+    syncPaloFromUI();
+const n = state.nextSessionNum || ((state.session?.n||1)+1);
+  state.session = { id: genSessionId(), n };
+  state.nextSessionNum = n + 1;
+  // Al crear sesión nueva, nos quedamos viendo "Sesión"
+  setHistView("session");
+  save();render();
+};
+
+/* ===== ZONAS FIJAS 0–300 ===== */
 const zonaSelect=document.getElementById("zonaSelect");
 const zonaActual=document.getElementById("zonaActual");
 
@@ -178,42 +356,107 @@ function evalZona(m){
   return{l:"OK",c:"ok"};
 }
 
-guardarBtn.onclick=()=>{
-  syncPaloFromUI();
-  const m=Number(distancia.value); if(!m) return;
-  const e=state.modo==="zona"?evalZona(m):{l:"—",c:"neutral"};
-  state.shots.push({modo:state.modo,palo:state.palo,dir:state.dir,m,eval:e,sessionId:state.sessionId});
-  distancia.value="";
-  save();render();
-};
-deshacerBtn.onclick=()=>{
-  for(let i=state.shots.length-1;i>=0;i--){
-    if(state.shots[i].sessionId===state.sessionId){
-      state.shots.splice(i,1);break;
-    }
+
+/* ===== EVALUACIÓN POR PALO (±5%) =====
+Regla: Range / Evaluación / Objetivo evalúan por palo con tolerancia ±5% del target.
+- Target inicial: state.clubRef[palo]
+- Aprendizaje: cuando hay ≥10 tiros del palo (no-Zona), el target se calcula por promedio.
+*/
+function clubShots(palo){
+  return state.shots.filter(s=>s.palo===palo && typeof s.m==="number" && s.m>0 && s.modo!=="zona");
+}
+function clubTarget(palo){
+  const shots=clubShots(palo);
+  const learned=shots.length>=10;
+  if(learned){
+    const avg=shots.reduce((a,s)=>a+s.m,0)/shots.length;
+    return {target:avg, learned:true, n:shots.length};
   }
-  save();render();
+  // Si hay pocos tiros, usa promedio parcial (≥3) si existe, si no, referencia fija
+  if(shots.length>=3){
+    const avg=shots.reduce((a,s)=>a+s.m,0)/shots.length;
+    return {target:avg, learned:false, n:shots.length};
+  }
+  return {target:(state.clubRef?.[palo] ?? 0), learned:false, n:shots.length};
+}
+function evalClub(m,palo){
+  const info=clubTarget(palo);
+  const t=info.target || 0;
+  if(!t) return {l:"—",c:"neutral",meta:info};
+  const tol=t*0.05;
+  if(m < (t - tol)) return {l:"Corto",c:"bad",meta:info};
+  if(m > (t + tol)) return {l:"Largo",c:"bad",meta:info};
+  return {l:"OK",c:"ok",meta:info};
+}
+
+/* ===== GUARDAR ===== */
+guardarBtn.onclick=()=>{
+    syncPaloFromUI();
+const m=Number(distancia.value);if(!m)return;
+  const e=(state.modo==="zona") ? evalZona(m) : evalClub(m,state.palo);
+  state.shots.push({sessionId: state.session.id, modo:state.modo,palo:state.palo,dir:state.dir,m,eval:e});
+  distancia.value="";save();render();
 };
 
+function undoLastInSession(){
+  for(let i=state.shots.length-1;i>=0;i--){
+    if(state.shots[i].sessionId===state.session.id){
+      state.shots.splice(i,1);
+      return true;
+    }
+  }
+  return false;
+}
+deshacerBtn.onclick=()=>{undoLastInSession();save();render();};
+
+/* ===== RENDER ===== */
 function render(){
   updateZona();
-  const h=document.getElementById("history");h.innerHTML="";
-  const shots=state.shots.filter(s=>s.sessionId===state.sessionId);
-  shots.slice().reverse().forEach((s,i)=>{
+
+  
+  // Sincronizar selección de palo (UI ⇄ estado)
+  document.querySelectorAll('#paloButtons .seg-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.textContent.trim()===state.palo);
+  });
+// Sesión actual (solo etiqueta)
+  if(sesionInfo) sesionInfo.textContent = `S${state.session?.n || 1}`;
+
+  // Asegurar estado visual de botones de vista
+  setHistView(state.historyView || "session");
+
+  // Shots para tabla: sesión o totales
+  const shotsView = (state.historyView==="total")
+    ? state.shots
+    : state.shots.filter(sh=>sh.sessionId===state.session.id);
+
+  const h=document.getElementById("history");
+  h.innerHTML="";
+
+  shotsView.slice().reverse().forEach((s,i)=>{
     h.innerHTML+=`<tr>
-      <td>${shots.length-i}</td><td>${s.modo}</td><td>${s.palo}</td>
+      <td>${shotsView.length-i}</td><td>${s.modo}</td><td>${s.palo}</td>
       <td>${s.dir}</td><td>${s.m}</td>
       <td><span class="badge ${s.eval.c}">${s.eval.l}</span></td>
     </tr>`;
   });
-  if(shots.length){
-    const u=shots[shots.length-1];
-    ultimoInfo.innerHTML=`Último: ${u.m} m → <span class="badge ${u.eval.c}">${u.eval.l}</span>`;
+
+  // Último golpe = último de la sesión actual
+  const lastSessionShot = [...state.shots].reverse().find(sh=>sh.sessionId===state.session.id);
+  if(lastSessionShot){
+    const u=lastSessionShot;
+    const meta = (u.eval && u.eval.meta)
+      ? ` <span style="color:var(--muted);">(target=${Math.round(u.eval.meta.target||0)} · n=${u.eval.meta.n}${u.eval.meta.learned?" ✓":""})</span>`
+      : "";
+    ultimoInfo.innerHTML=`Último: ${u.m} m → <span class="badge ${u.eval.c}">${u.eval.l}</span>` + meta;
+  }else{
+    ultimoInfo.textContent="Último: —";
   }
 }
 render();
 
-if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js"); }
+/* ===== SW ===== */
+if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js");}
 </script>
+
 </body>
 </html>
