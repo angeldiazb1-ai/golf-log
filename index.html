@@ -178,7 +178,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 <section class="card" id="clubStatsCard">
 <h2>Alcances por palo (Totales)</h2>
 <div class="pill" style="margin-top:0;">
-  <span>Base:</span><strong>solo tiros NO-Zona</strong>
+  <span>Base:</span><strong>solo tiros con distancia (range)</strong>
 </div>
 <div class="pill" style="margin-top:10px;">
   <span>Referencia:</span><strong>tabla fija (min–max)</strong>
@@ -556,7 +556,7 @@ function evalZona(m){
 
 /* ===== EVALUACIÓN ±5% POR PALO (no-Zona) ===== */
 function statsByClub(){
-  // solo tiros NO-Zona, porque Zona se evalúa distinto
+  // solo tiros con distancia (range), porque Zona se evalúa distinto
   const map = {};
   state.shots.filter(sh=>sh.modo!=="zona").forEach(sh=>{
     const club = sh.palo || "—";
@@ -758,23 +758,37 @@ function clubOrder(){
 }
 
 function computeClubStatsTotal(){
-  // Solo NO-Zona por consistencia con evaluación por palo
-  const shots = state.shots.filter(sh=>sh.modo!=="zona" && Number(sh.m)>0);
+  // Alcances: solo tiros con distancia (modo range) para que sea consistente y comparable
   const map = new Map();
+  const shots = (state.shots || []).filter(sh => {
+    const modo = String(sh?.modo ?? '').trim().toLowerCase();
+    const m = Number(sh?.m);
+    if (!Number.isFinite(m) || m <= 0) return false;
+    // Normalizamos para soportar datos viejos o variantes
+    return (modo === 'range' || modo === 'no-zona' || modo === 'nozona' || modo === 'practice' || modo === '');
+  });
+
   for(const sh of shots){
-    const club = (sh.palo||"—").trim();
+    const club = String(sh?.palo ?? '—').trim() || '—';
     const m = Number(sh.m);
-    if(!map.has(club)) map.set(club, {club, n:0, min:m, max:m, sum:0});
+    if(!map.has(club)) map.set(club, {n:0, min:m, max:m, sum:0});
     const st = map.get(club);
     st.n += 1;
     st.sum += m;
-    st.min = Math.min(st.min, m);
-    st.max = Math.max(st.max, m);
+    if(m < st.min) st.min = m;
+    if(m > st.max) st.max = m;
   }
-  for(const st of map.values()){
-    st.avg = st.n ? (st.sum / st.n) : 0;
-  }
-  return map;
+
+  // a array ordenado por palo
+  return Array.from(map.entries())
+    .map(([club, st]) => ({
+      club,
+      n: st.n,
+      min: Math.round(st.min),
+      avg: Math.round(st.sum / st.n),
+      max: Math.round(st.max)
+    }))
+    .sort((a,b) => a.club.localeCompare(b.club));
 }
 
 function renderClubStats(){
