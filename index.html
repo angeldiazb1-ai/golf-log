@@ -757,6 +757,7 @@ function clubOrder(){
   return ["Driver","H3","H4","5i","6i","7i","8i","9i","PW","SW56","Putter"];
 }
 
+/* ===== RESUMEN POR PALO (TOTALES) ===== */
 function computeClubStatsTotal(){
   // Alcances: solo tiros con distancia (modo range) para que sea consistente y comparable
   const map = new Map();
@@ -764,6 +765,7 @@ function computeClubStatsTotal(){
     const modo = String(sh?.modo ?? '').trim().toLowerCase();
     const m = Number(sh?.m);
     if (!Number.isFinite(m) || m <= 0) return false;
+
     // Normalizamos para soportar datos viejos o variantes
     return (modo === 'range' || modo === 'no-zona' || modo === 'nozona' || modo === 'practice' || modo === '');
   });
@@ -771,43 +773,71 @@ function computeClubStatsTotal(){
   for(const sh of shots){
     const club = String(sh?.palo ?? '—').trim() || '—';
     const m = Number(sh.m);
+
     if(!map.has(club)) map.set(club, {n:0, min:m, max:m, sum:0});
     const st = map.get(club);
+
     st.n += 1;
     st.sum += m;
     if(m < st.min) st.min = m;
     if(m > st.max) st.max = m;
   }
 
-  // a array ordenado por palo
-  return Array.from(map.entries())
-    .map(([club, st]) => ({
-      club,
-      n: st.n,
-      min: Math.round(st.min),
-      avg: Math.round(st.sum / st.n),
-      max: Math.round(st.max)
-    }))
-    .sort((a,b) => a.club.localeCompare(b.club));
+  return map; // ✅ IMPORTANTE: regresamos el Map, no un array
 }
 
 function renderClubStats(){
   const body = document.getElementById("clubStatsBody");
   if(!body) return;
 
-  const map = computeClubStatsTotal();
+  const statsMap = computeClubStatsTotal();
   const targets = state.clubTargets || {};
 
   // construir lista de clubes: primero orden conocido, luego cualquier extra
   const ordered = clubOrder();
-  const extras = [...map.keys()].filter(k=>!ordered.includes(k)).sort();
-  const clubs = [...ordered, ...extras].filter(c=>map.has(c));
+  const extras = [...statsMap.keys()].filter(k=>!ordered.includes(k)).sort();
+  const clubs = [...ordered, ...extras].filter(c=>statsMap.has(c));
 
   body.innerHTML = "";
   if(!clubs.length){
-    body.innerHTML = `<tr><td colspan="7" style="text-align:left;color:var(--muted);padding:10px;">Aún no hay tiros (NO-Zona) para calcular stats por palo.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7" style="text-align:left;color:var(--muted);padding:10px;">
+      Aún no hay tiros con distancia (range) para calcular stats por palo.
+    </td></tr>`;
     return;
   }
+
+  for(const club of clubs){
+    const st0 = statsMap.get(club);
+    const st = {
+      n: st0.n,
+      min: Math.round(st0.min),
+      avg: Math.round(st0.sum / st0.n),
+      max: Math.round(st0.max)
+    };
+
+    const r = ranges[club] || null;
+    const ref = (targets && (targets[club]===0 || targets[club])) ? Number(targets[club]) : null; // midpoint fijo
+    const delta = (ref!==null && Number.isFinite(ref)) ? (st.avg - ref) : null;
+
+    const fmt = (x)=> Number.isFinite(x) ? Math.round(x) : "—";
+    const fmtDelta = (d)=>{
+      if(!Number.isFinite(d)) return "—";
+      const s = Math.round(d);
+      return (s>0?`+${s}`:`${s}`);
+    };
+
+    body.innerHTML += `<tr>
+      <td>${club}</td>
+      <td>${st.n}</td>
+      <td>${fmt(st.min)}</td>
+      <td>${fmt(st.avg)}</td>
+      <td>${fmt(st.max)}</td>
+      <td>${r ? `${r.min}–${r.max}` : "—"}</td>
+      <td>${delta!==null ? fmtDelta(delta) : "—"}</td>
+    </tr>`;
+  }
+}
+
 
   for(const club of clubs){
     const st = map.get(club);
