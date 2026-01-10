@@ -1,181 +1,713 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Golf Log</title>
-
-<style>
-  body {
-    margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #0f3d2e;
-    color: #e8fff4;
-  }
-  h2 { margin: 16px 0 8px; }
-  .card {
-    background: #134b3a;
-    border-radius: 14px;
-    padding: 14px;
-    margin: 12px;
-  }
-  button {
-    border: none;
-    border-radius: 12px;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .btn-green { background: #3ddc97; color: #083a28; }
-  .btn-yellow { background: #ffcc33; color: #3a2b00; }
-  .btn-blue { background: #63a4ff; color: #0a2540; }
-  .btn-gray { background: #3b4b45; color: #d0e6dc; }
-
-  textarea {
-    width: 100%;
-    min-height: 160px;
-    border-radius: 12px;
-    border: 2px solid #2f7f62;
-    background: #0d3024;
-    color: #e8fff4;
-    padding: 10px;
-    font-family: monospace;
-    font-size: 13px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 8px;
-  }
-  th, td {
-    padding: 8px;
-    border-bottom: 1px solid #2f7f62;
-    text-align: left;
-  }
-  th { opacity: .85; }
-
-  .row { display: flex; gap: 10px; }
-  .row button { flex: 1; }
-
-  .pill {
-    display: inline-block;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  .pill-ok { background: #2ecc71; color: #083a28; }
-  .pill-warn { background: #e74c3c; color: white; }
-
-  .bar {
-    height: 14px;
-    border-radius: 7px;
-    background: linear-gradient(to right, #e74c3c 0%, #3ddc97 50%, #e74c3c 100%);
-    margin: 8px 0;
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b3b2e" />
+  <title>Golf Log • B6.2 (estable)</title>
+  <style>
+    :root{
+      --bg:#062a22;
+      --border:rgba(255,255,255,.10);
+      --text:#e9fff6;
+      --muted:rgba(233,255,246,.72);
+      --line:rgba(233,255,246,.14);
+      --good:#43e08f;
+      --warn:#ffc931;
+      --blue:#66a9ff;
+      --radius:22px;
+      --shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 900px at 50% -10%, #0d5b46 0%, var(--bg) 55%);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      padding: calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 22px);
+    }
+    .container{max-width:760px;margin:0 auto}
+    .title{font-size:28px;font-weight:900;margin:6px 2px 6px}
+    .subtitle{color:var(--muted);font-size:14px;margin:0 2px 14px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+      margin:12px 0;
+      overflow:hidden;
+    }
+    label{display:block;color:var(--muted);font-size:13px;margin:0 0 6px}
+    select,input,textarea{
+      width:100%;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      padding: 14px;
+      font-size: 18px;
+      outline:none;
+    }
+    textarea{
+      min-height:140px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
+      font-size:13px;
+      background: rgba(0,0,0,.25);
+      line-height:1.35;
+    }
+    .row{display:flex;gap:12px;align-items:center}
+    .wrap{flex-wrap:wrap}
+    .grow{flex:1}
+    .seg{
+      display:flex;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:6px;
+      gap:6px;
+    }
+    .seg button{
+      flex:1;
+      border:none;
+      border-radius:14px;
+      padding:10px 10px;
+      font-weight:900;
+      font-size:16px;
+      color: rgba(233,255,246,.85);
+      background: transparent;
+      cursor:pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .seg button.active{background: rgba(67,224,143,.25); color: var(--text)}
+    .btn{
+      border:none;
+      border-radius:20px;
+      padding:16px 14px;
+      font-weight:900;
+      font-size:20px;
+      cursor:pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+      user-select:none;
+    }
+    .good{background:var(--good);color:#083524}
+    .warn{background:var(--warn);color:#3a2a00}
+    .blue{background:var(--blue);color:#07213f}
+    .gray{background:rgba(255,255,255,.16);color:rgba(233,255,246,.92)}
+    .tabs{display:flex;gap:10px}
+    .tab{
+      flex:1;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(233,255,246,.85);
+      padding: 12px 10px;
+      font-weight:900;
+      font-size:18px;
+      cursor:pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab.active{background: rgba(67,224,143,.25); color: var(--text)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding: 10px 14px;border-radius:999px;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      color: var(--muted);
+      font-weight:800;
+    }
+    .pill strong{color:var(--text)}
+    .status{
+      margin-top:10px;
+      padding: 10px 14px;
+      border-radius:16px;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      color: var(--muted);
+      display:flex;justify-content:space-between;gap:12px;align-items:center;
+      font-size:14px;
+    }
+    .status b{color:var(--text)}
+    .table{width:100%;border-collapse:collapse;margin-top:12px;font-size:16px}
+    .table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left}
+    .table th{color:var(--muted);font-weight:900;font-size:14px}
+    .num{text-align:right}
+    .bar{
+      height:18px;border-radius:999px;overflow:hidden;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      display:flex;
+      margin-top:12px;
+    }
+    .bar > div{height:100%}
+    .bar .l{background:#ff4d4d}
+    .bar .c{background:var(--good)}
+    .bar .r{background:#a83838}
+    .mini{color:var(--muted);font-size:13px;line-height:1.35;margin-top:10px}
+    .hidden{display:none !important}
+    .footer{text-align:center;margin-top:18px;color:rgba(233,255,246,.55);font-size:12px}
+  </style>
 </head>
-
 <body>
+  <div class="container">
+    <div class="title">Golf Log</div>
+    <div class="subtitle">B6.2 (estable) • sesiones + dispersión + alcances + respaldo JSON</div>
 
-<div class="card">
-  <h2>Distancia (m)</h2>
-  <input id="distInput" type="number" placeholder="Ej. 220" style="width:100%;padding:14px;border-radius:12px;border:none;font-size:16px;">
-  <div class="row" style="margin-top:10px;">
-    <button id="guardarBtn" class="btn-green">Guardar golpe</button>
-    <button id="deshacerBtn" class="btn-yellow">Deshacer</button>
+    <div class="card">
+      <div class="row wrap">
+        <div class="grow">
+          <label>Modo</label>
+          <div class="seg">
+            <button id="btnModeRange" type="button" class="active">range</button>
+            <button id="btnModeZona" type="button">zona</button>
+          </div>
+        </div>
+        <div class="grow">
+          <label>Palo</label>
+          <select id="selClub">
+            <option>Driver</option><option>3W</option><option>5W</option>
+            <option>3H</option><option>4H</option>
+            <option>4i</option><option>5i</option><option>6i</option><option>7i</option><option>8i</option><option>9i</option>
+            <option>PW</option><option>GW</option><option>SW</option><option>LW</option>
+            <option>Putter</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row wrap" style="margin-top:12px">
+        <div class="grow">
+          <label>Dirección</label>
+          <div class="seg">
+            <button id="btnDirL" type="button">Izq</button>
+            <button id="btnDirC" type="button" class="active">Centro</button>
+            <button id="btnDirR" type="button">Der</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row wrap" style="margin-top:12px" id="rowDistance">
+        <div class="grow">
+          <label>Distancia (m)</label>
+          <input id="inpDist" inputmode="numeric" placeholder="Ej. 220" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:14px">
+        <button id="btnSave" class="btn good grow" type="button">Guardar golpe</button>
+        <button id="btnUndo" class="btn warn grow" type="button">Deshacer</button>
+      </div>
+
+      <div class="mini">En <b>range</b> guarda distancia. En <b>zona</b> guarda palo+dirección (sirve para dispersión).</div>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <button id="tabSession" type="button" class="tab active">Sesión</button>
+        <button id="tabTotals" type="button" class="tab">Totales</button>
+      </div>
+
+      <div style="margin-top:12px">
+        <button id="btnNewSession" type="button" class="btn blue" style="width:100%">Nueva sesión</button>
+      </div>
+
+      <div class="status">
+        <div>Sesión actual:</div>
+        <div><b id="lblSession">S1</b></div>
+      </div>
+
+      <div id="historyWrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="title" style="font-size:24px;margin:0 0 6px">Dispersión (Sesión)</div>
+      <div class="row wrap">
+        <div class="pill"><strong>Izq</strong> <span id="dispL">0% (0)</span></div>
+        <div class="pill"><strong>Centro</strong> <span id="dispC">0% (0)</span></div>
+        <div class="pill"><strong>Der</strong> <span id="dispR">0% (0)</span></div>
+      </div>
+      <div class="bar" aria-label="barra de dispersión">
+        <div class="l" id="barL" style="width:0%"></div>
+        <div class="c" id="barC" style="width:100%"></div>
+        <div class="r" id="barR" style="width:0%"></div>
+      </div>
+      <div class="status">
+        <div>Sesgo (Izq↔Der):</div>
+        <div><b id="lblBias">Neutral</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title" style="font-size:24px;margin:0 0 6px">Alcances por palo (Totales)</div>
+      <div class="pill"><span class="muted">Base:</span> <strong>solo tiros con distancia (range)</strong></div>
+      <div class="mini" id="rangesHint"></div>
+      <div id="rangesTableWrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="title" style="font-size:24px;margin:0 0 6px">Respaldo (JSON)</div>
+      <div class="pill"><strong>Tip:</strong>&nbsp;Exporta antes de actualizar</div>
+      <textarea id="txtBackup" placeholder="Exporta aquí o pega un JSON para importar"></textarea>
+
+      <div class="row wrap" style="margin-top:12px">
+        <button id="btnExport" type="button" class="btn good grow">Exportar</button>
+        <button id="btnCopy" type="button" class="btn warn grow">Copiar</button>
+      </div>
+      <div class="row wrap" style="margin-top:12px">
+        <button id="btnImport" type="button" class="btn blue grow">Importar</button>
+        <button id="btnClear" type="button" class="btn gray grow">Limpiar</button>
+      </div>
+
+      <div class="status">
+        <div>Estado:</div>
+        <div><b id="lblBackupStatus">—</b></div>
+      </div>
+      <div class="mini">Importar sobrescribe tus datos locales (con confirmación).</div>
+    </div>
+
+    <div class="footer">Golf Log • B6.2 • build=2026-01-10</div>
   </div>
-</div>
-
-<div class="card">
-  <h2>Historial (Sesión)</h2>
-  <button id="nuevaSesionBtn" class="btn-blue" style="width:100%;">Nueva sesión</button>
-  <table id="tablaSesion"></table>
-</div>
-
-<div class="card">
-  <h2>Dispersión (Sesión)</h2>
-  <div id="dispersion"></div>
-  <div class="bar"></div>
-  <div><strong>Sesgo:</strong> <span id="sesgo">—</span></div>
-</div>
-
-<div class="card">
-  <h2>Alcances por palo (Totales)</h2>
-  <div><strong>Base:</strong> solo tiros con distancia (range)</div>
-  <table id="tablaAlcances"></table>
-</div>
-
-<div class="card">
-  <h2>Respaldo (JSON)</h2>
-  <div class="pill pill-ok">Exporta antes de actualizar</div>
-  <textarea id="backupJson" placeholder="Aquí aparecerá tu respaldo o pega un JSON para importar"></textarea>
-  <div class="row" style="margin-top:10px;">
-    <button id="exportarBtn" class="btn-green">Exportar</button>
-    <button id="copiarBtn" class="btn-yellow">Copiar</button>
-  </div>
-  <div class="row" style="margin-top:10px;">
-    <button id="importarBtn" class="btn-blue">Importar</button>
-    <button id="limpiarBtn" class="btn-gray">Limpiar</button>
-  </div>
-  <div id="estadoBackup" style="margin-top:8px;opacity:.85;">Estado: —</div>
-</div>
 
 <script>
-let state = { sessionId: 1, tiros: [] };
+(() => {
+  "use strict";
 
-function save(){ localStorage.setItem("golf-log", JSON.stringify(state)); }
-function load(){ const r = localStorage.getItem("golf-log"); if(r) state = JSON.parse(r); }
+  const STORAGE_KEY = "golfLogState";
+  const APP_NAME = "golf-log";
+  const SCHEMA = 1;
 
-function guardarTiro(){
-  const i = document.getElementById("distInput");
-  const m = Number(i.value);
-  if(!m) return;
-  state.tiros.push({ session: state.sessionId, palo:"Driver", modo:"range", dir:"Centro", m });
-  i.value = "";
-  save(); renderAll();
-}
-function deshacerUltimo(){ state.tiros.pop(); save(); renderAll(); }
-function nuevaSesion(){ state.sessionId++; save(); renderAll(); }
+  const REF = {
+    "Driver":[200,260],"3W":[180,230],"5W":[170,215],
+    "3H":[160,205],"4H":[150,195],
+    "4i":[145,185],"5i":[135,175],"6i":[125,165],"7i":[115,155],"8i":[105,145],"9i":[95,135],
+    "PW":[80,120],"GW":[70,105],"SW":[55,90],"LW":[40,75],
+    "Putter":[0,0]
+  };
 
-function renderSesion(){
-  const t = document.getElementById("tablaSesion");
-  const rows = state.tiros.filter(x=>x.session===state.sessionId).slice().reverse()
-    .map((x,i)=>`<tr><td>${i+1}</td><td>${x.modo}</td><td>${x.palo}</td></tr>`).join("");
-  t.innerHTML = "<tr><th>#</th><th>Modo</th><th>Palo</th></tr>"+rows;
-}
-function renderDispersion(){
-  const d = document.getElementById("dispersion");
-  const s = state.tiros.filter(x=>x.session===state.sessionId);
-  const n = s.length||1;
-  const c=s.filter(x=>x.dir==="Centro").length,l=s.filter(x=>x.dir==="Izq").length,r=s.filter(x=>x.dir==="Der").length;
-  d.innerHTML=`<div>Izq ${Math.round(l/n*100)}% (${l})</div><div>Centro ${Math.round(c/n*100)}% (${c})</div><div>Der ${Math.round(r/n*100)}% (${r})</div>`;
-  document.getElementById("sesgo").textContent = l>r?"Izquierda":r>l?"Derecha":"Neutral";
-}
-function renderAlcances(){
-  const t=document.getElementById("tablaAlcances");
-  const a=state.tiros.filter(x=>x.m && x.modo==="range").map(x=>x.m);
-  if(!a.length){ t.innerHTML="<tr><td>Aún no hay tiros con distancia</td></tr>"; return; }
-  const min=Math.min(...a),max=Math.max(...a),avg=Math.round(a.reduce((s,v)=>s+v,0)/a.length);
-  t.innerHTML=`<tr><th>Palo</th><th>n</th><th>Mín</th><th>Prom</th><th>Máx</th></tr><tr><td>Driver</td><td>${a.length}</td><td>${min}</td><td>${avg}</td><td>${max}</td></tr>`;
-}
-function renderAll(){ renderSesion(); renderDispersion(); renderAlcances(); }
+  const $ = (id) => document.getElementById(id);
 
-function setupBackup(){
-  const ta=document.getElementById("backupJson"), st=document.getElementById("estadoBackup");
-  document.getElementById("exportarBtn").onclick=()=>{ ta.value=JSON.stringify({__app:"golf-log",__schema:1,exportedAt:new Date().toISOString(),state},null,2); st.textContent="Estado: Exportado ✅"; };
-  document.getElementById("copiarBtn").onclick=()=>{ ta.select(); document.execCommand("copy"); st.textContent="Estado: Copiado 📋"; };
-  document.getElementById("importarBtn").onclick=()=>{ try{ const d=JSON.parse(ta.value); if(!d.state) throw 0; state=d.state; save(); renderAll(); st.textContent="Estado: Importado ✅"; }catch{ st.textContent="Estado: JSON inválido ❌"; } };
-  document.getElementById("limpiarBtn").onclick=()=>{ ta.value=""; st.textContent="Estado: —"; };
-}
+  const el = {
+    btnModeRange: $("btnModeRange"),
+    btnModeZona: $("btnModeZona"),
+    selClub: $("selClub"),
+    btnDirL: $("btnDirL"),
+    btnDirC: $("btnDirC"),
+    btnDirR: $("btnDirR"),
+    rowDistance: $("rowDistance"),
+    inpDist: $("inpDist"),
+    btnSave: $("btnSave"),
+    btnUndo: $("btnUndo"),
+    tabSession: $("tabSession"),
+    tabTotals: $("tabTotals"),
+    btnNewSession: $("btnNewSession"),
+    lblSession: $("lblSession"),
+    historyWrap: $("historyWrap"),
+    dispL: $("dispL"),
+    dispC: $("dispC"),
+    dispR: $("dispR"),
+    barL: $("barL"),
+    barC: $("barC"),
+    barR: $("barR"),
+    lblBias: $("lblBias"),
+    rangesHint: $("rangesHint"),
+    rangesTableWrap: $("rangesTableWrap"),
+    txtBackup: $("txtBackup"),
+    btnExport: $("btnExport"),
+    btnCopy: $("btnCopy"),
+    btnImport: $("btnImport"),
+    btnClear: $("btnClear"),
+    lblBackupStatus: $("lblBackupStatus")
+  };
 
-load(); renderAll(); setupBackup();
-document.getElementById("guardarBtn").onclick=guardarTiro;
-document.getElementById("deshacerBtn").onclick=deshacerUltimo;
-document.getElementById("nuevaSesionBtn").onclick=nuevaSesion;
+  const defaultState = () => ({
+    __app: APP_NAME,
+    __schema: SCHEMA,
+    currentSession: 1,
+    ui: { mode:"range", club:"Driver", dir:"Centro", historyTab:"session" },
+    shots: [],
+    undo: []
+  });
+
+  let state = load();
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return defaultState();
+      const st = JSON.parse(raw);
+      if(!st || st.__app !== APP_NAME) return defaultState();
+      if(!Array.isArray(st.shots)) st.shots = [];
+      if(!st.ui) st.ui = defaultState().ui;
+      if(!Array.isArray(st.undo)) st.undo = [];
+      if(typeof st.currentSession !== "number") st.currentSession = 1;
+      st.__schema = SCHEMA;
+      return st;
+    }catch(e){
+      return defaultState();
+    }
+  }
+
+  function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+  function bindTap(elem, fn){
+    if(!elem) return;
+    let lock = false;
+    const run = (ev) => {
+      try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){}
+      if(lock) return;
+      lock = true;
+      try{ fn(); } finally { setTimeout(()=>lock=false, 180); }
+    };
+    elem.addEventListener("click", run, {passive:false});
+    elem.addEventListener("touchend", run, {passive:false});
+    elem.addEventListener("pointerup", run, {passive:false});
+  }
+
+  function setMode(mode){
+    state.ui.mode = mode;
+    el.btnModeRange.classList.toggle("active", mode==="range");
+    el.btnModeZona.classList.toggle("active", mode==="zona");
+    el.rowDistance.classList.toggle("hidden", mode!=="range");
+    save();
+  }
+
+  function setDir(dir){
+    state.ui.dir = dir;
+    el.btnDirL.classList.toggle("active", dir==="Izq");
+    el.btnDirC.classList.toggle("active", dir==="Centro");
+    el.btnDirR.classList.toggle("active", dir==="Der");
+    save();
+  }
+
+  function setTab(tab){
+    state.ui.historyTab = tab;
+    el.tabSession.classList.toggle("active", tab==="session");
+    el.tabTotals.classList.toggle("active", tab==="totals");
+    save();
+    renderHistory();
+  }
+
+  function sessionLabel(){ return "S" + String(state.currentSession); }
+
+  function parseDist(){
+    const v = (el.inpDist.value || "").trim().replace(",", ".");
+    if(!v) return null;
+    const n = Number(v);
+    if(!Number.isFinite(n)) return null;
+    if(n <= 0 || n > 500) return null;
+    return Math.round(n);
+  }
+
+  function newId(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+
+  function addShot(){
+    const mode = state.ui.mode;
+    const club = el.selClub.value || state.ui.club || "Driver";
+    state.ui.club = club;
+    const dir = state.ui.dir || "Centro";
+
+    let dist;
+    if(mode === "range"){
+      dist = parseDist();
+      if(dist === null){ toast("Distancia inválida (ej. 220)"); return; }
+    }
+
+    const shot = {
+      id: newId(),
+      ts: new Date().toISOString(),
+      session: state.currentSession,
+      mode,
+      club,
+      dir,
+      ...(mode==="range" ? {dist} : {})
+    };
+
+    state.shots.unshift(shot);
+    state.undo.unshift(shot.id);
+    if(state.undo.length > 50) state.undo.pop();
+    if(mode==="range") el.inpDist.value = "";
+
+    save();
+    render();
+    toast("Guardado ✅");
+  }
+
+  function undo(){
+    const id = state.undo.shift();
+    if(!id){ toast("No hay nada que deshacer"); return; }
+    const before = state.shots.length;
+    state.shots = state.shots.filter(s => s.id !== id);
+    if(state.shots.length === before){
+      toast("No se encontró el último golpe");
+    }else{
+      save();
+      render();
+      toast("Deshecho ↩️");
+    }
+  }
+
+  function newSession(){
+    state.currentSession = (state.currentSession || 1) + 1;
+    save();
+    render();
+    toast("Nueva sesión: " + sessionLabel());
+  }
+
+  function renderHistory(){
+    el.lblSession.textContent = sessionLabel();
+    const tab = state.ui.historyTab || "session";
+    const shots = (tab==="session")
+      ? state.shots.filter(s => s.session === state.currentSession)
+      : state.shots.slice();
+
+    if(shots.length === 0){
+      el.historyWrap.innerHTML = `<div class="mini">Aún no hay tiros.</div>`;
+      return;
+    }
+
+    if(tab==="session"){
+      const rows = shots.map((s, idx) => `
+        <tr>
+          <td class="num">${shots.length - idx}</td>
+          <td>${s.mode}</td>
+          <td>${s.club}</td>
+        </tr>
+      `).join("");
+      el.historyWrap.innerHTML = `
+        <table class="table">
+          <thead><tr><th>#</th><th>Modo</th><th>Palo</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+      return;
+    }
+
+    const rows = shots.map((s, idx) => `
+      <tr>
+        <td class="num">${shots.length - idx}</td>
+        <td>${s.mode}</td>
+        <td>${s.club}</td>
+        <td>${s.dir || "—"}</td>
+        <td class="num">${(typeof s.dist === "number") ? s.dist : "—"}</td>
+      </tr>
+    `).join("");
+    el.historyWrap.innerHTML = `
+      <table class="table">
+        <thead><tr><th>#</th><th>Modo</th><th>Palo</th><th>Dir</th><th class="num">m</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  function renderDispersion(){
+    const shots = state.shots.filter(s => s.session === state.currentSession);
+    const n = shots.length;
+    const count = {Izq:0, Centro:0, Der:0};
+    for(const s of shots){
+      const d = s.dir || "Centro";
+      if(count[d] !== undefined) count[d] += 1;
+    }
+    const pct = (x)=> n ? Math.round((x*100)/n) : 0;
+    const pL=pct(count.Izq), pC=pct(count.Centro), pR=pct(count.Der);
+
+    el.dispL.textContent = `${pL}% (${count.Izq})`;
+    el.dispC.textContent = `${pC}% (${count.Centro})`;
+    el.dispR.textContent = `${pR}% (${count.Der})`;
+
+    el.barL.style.width = `${pL}%`;
+    el.barC.style.width = `${pC}%`;
+    el.barR.style.width = `${pR}%`;
+
+    let bias = "Neutral";
+    if(count.Izq - count.Der >= 3) bias = "Sesgo Izq";
+    if(count.Der - count.Izq >= 3) bias = "Sesgo Der";
+    el.lblBias.textContent = bias;
+  }
+
+  function renderRanges(){
+    const rangeShots = state.shots.filter(s => s.mode==="range" and isinstance(s.get("dist"), int))
+  }
+
+  function exportJSON(){
+    const payload = { __app: APP_NAME, __schema: SCHEMA, __exportedAt: new Date().toISOString(), state };
+    el.txtBackup.value = JSON.stringify(payload, null, 2);
+    el.lblBackupStatus.textContent = "Exportado ✅";
+  }
+
+  async function copyJSON(){
+    const txt = (el.txtBackup.value || "").trim();
+    if(!txt){ toast("Primero exporta o pega un JSON"); return; }
+    try{
+      await navigator.clipboard.writeText(txt);
+      el.lblBackupStatus.textContent = "Copiado ✅";
+      toast("Copiado ✅");
+    }catch(_){
+      try{
+        el.txtBackup.focus();
+        el.txtBackup.select();
+        const ok = document.execCommand("copy");
+        if(ok){
+          el.lblBackupStatus.textContent = "Copiado ✅";
+          toast("Copiado ✅");
+        }else{
+          el.lblBackupStatus.textContent = "No se pudo copiar";
+          toast("No se pudo copiar");
+        }
+      }catch(__){
+        el.lblBackupStatus.textContent = "No se pudo copiar";
+        toast("No se pudo copiar");
+      }
+    }
+  }
+
+  function validateImport(obj){
+    if(!obj || typeof obj !== "object") return "JSON inválido";
+    if(obj.__app !== APP_NAME) return "JSON no corresponde a Golf Log";
+    if(!obj.state || typeof obj.state !== "object") return "Falta state";
+    const st = obj.state;
+    if(st.__app !== APP_NAME) return "state.__app inválido";
+    if(!Array.isArray(st.shots)) return "state.shots inválido";
+    if(!st.ui || typeof st.ui !== "object") return "state.ui inválido";
+    if(typeof st.currentSession !== "number") return "state.currentSession inválido";
+    return null;
+  }
+
+  function importJSON(){
+    const raw = (el.txtBackup.value || "").trim();
+    if(!raw){ toast("Pega un JSON primero"); return; }
+    let obj;
+    try{ obj = JSON.parse(raw); }catch(_){ toast("JSON mal formado"); el.lblBackupStatus.textContent = "JSON mal formado"; return; }
+    const err = validateImport(obj);
+    if(err){ toast(err); el.lblBackupStatus.textContent = "Error: " + err; return; }
+    if(!confirm("Esto sobrescribirá tus datos locales. ¿Importar?")) return;
+
+    state = obj.state;
+    if(!Array.isArray(state.undo)) state.undo = [];
+    if(!state.ui) state.ui = defaultState().ui;
+    if(!state.ui.historyTab) state.ui.historyTab = "session";
+    if(!state.ui.dir) state.ui.dir = "Centro";
+    state.__schema = SCHEMA;
+
+    save();
+    render();
+    el.lblBackupStatus.textContent = "Importado ✅";
+    toast("Importado ✅");
+  }
+
+  function clearBackup(){
+    el.txtBackup.value = "";
+    el.lblBackupStatus.textContent = "—";
+  }
+
+  let tmr = null;
+  function toast(msg){
+    try{
+      let div = document.getElementById("__toast");
+      if(!div){
+        div = document.createElement("div");
+        div.id="__toast";
+        div.style.position="fixed";
+        div.style.left="50%";
+        div.style.transform="translateX(-50%)";
+        div.style.bottom="calc(env(safe-area-inset-bottom) + 16px)";
+        div.style.background="rgba(0,0,0,.65)";
+        div.style.color="white";
+        div.style.padding="10px 14px";
+        div.style.borderRadius="999px";
+        div.style.fontWeight="900";
+        div.style.zIndex="9999";
+        div.style.maxWidth="92vw";
+        div.style.textAlign="center";
+        div.style.fontSize="14px";
+        document.body.appendChild(div);
+      }
+      div.textContent = msg;
+      div.style.opacity="1";
+      clearTimeout(tmr);
+      tmr = setTimeout(()=>{ div.style.opacity="0"; }, 1200);
+    }catch(_){}
+  }
+
+  function renderRanges(){
+    const rangeShots = state.shots.filter(s => s.mode==="range" && typeof s.dist==="number" && Number.isFinite(s.dist));
+    if(rangeShots.length === 0){
+      el.rangesHint.innerHTML = "Aún no hay tiros con distancia.";
+      el.rangesTableWrap.innerHTML = "";
+      return;
+    }
+    const map = new Map();
+    for(const s of rangeShots){
+      const club = s.club || "—";
+      if(!map.has(club)) map.set(club, []);
+      map.get(club).push(s.dist);
+    }
+    const clubs = Array.from(map.keys()).sort((a,b)=>a.localeCompare(b, "es", {numeric:true}));
+    const rows = clubs.map(club=>{
+      const arr = map.get(club).slice().sort((a,b)=>a-b);
+      const n = arr.length;
+      const min = arr[0];
+      const max = arr[arr.length-1];
+      const avg = Math.round(arr.reduce((s,x)=>s+x,0)/n);
+      const ref = REF[club] || null;
+      const refTxt = (ref && ref[0] && ref[1]) ? `${ref[0]}–${ref[1]}` : "—";
+      return `<tr><td>${club}</td><td class="num">${n}</td><td class="num">${min}</td><td class="num">${avg}</td><td class="num">${max}</td><td class="num">${refTxt}</td></tr>`;
+    }).join("");
+    el.rangesHint.innerHTML = `Tiros considerados: <b style="color:var(--text)">${rangeShots.length}</b>`;
+    el.rangesTableWrap.innerHTML = `<table class="table"><thead><tr><th>Palo</th><th class="num">n</th><th class="num">Min</th><th class="num">Prom</th><th class="num">Max</th><th class="num">Ref</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  function render(){
+    el.selClub.value = state.ui.club || "Driver";
+    setMode(state.ui.mode || "range");
+    setDir(state.ui.dir || "Centro");
+
+    const tab = state.ui.historyTab || "session";
+    el.tabSession.classList.toggle("active", tab==="session");
+    el.tabTotals.classList.toggle("active", tab==="totals");
+
+    renderHistory();
+    renderDispersion();
+    renderRanges();
+  }
+
+  function bindAll(){
+    bindTap(el.btnModeRange, ()=>{ setMode("range"); render(); });
+    bindTap(el.btnModeZona,  ()=>{ setMode("zona"); render(); });
+
+    bindTap(el.btnDirL, ()=>{ setDir("Izq"); renderDispersion(); });
+    bindTap(el.btnDirC, ()=>{ setDir("Centro"); renderDispersion(); });
+    bindTap(el.btnDirR, ()=>{ setDir("Der"); renderDispersion(); });
+
+    el.selClub.addEventListener("change", ()=>{
+      state.ui.club = el.selClub.value;
+      save();
+      renderRanges();
+    });
+
+    bindTap(el.btnSave, addShot);
+    bindTap(el.btnUndo, undo);
+
+    bindTap(el.tabSession, ()=>setTab("session"));
+    bindTap(el.tabTotals,  ()=>setTab("totals"));
+    bindTap(el.btnNewSession, newSession);
+
+    bindTap(el.btnExport, exportJSON);
+    bindTap(el.btnCopy, copyJSON);
+    bindTap(el.btnImport, importJSON);
+    bindTap(el.btnClear, clearBackup);
+
+    el.inpDist.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter"){ e.preventDefault(); addShot(); }
+    });
+  }
+
+  bindAll();
+  render();
+})();
 </script>
-
 </body>
 </html>
