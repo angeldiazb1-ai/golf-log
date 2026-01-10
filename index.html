@@ -256,7 +256,30 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 </section>
 
 
-<footer>Golf Log · B5.0.1 (respaldo JSON fix iOS) · PWA</footer>
+
+<section class="card" id="resetCard">
+  <h2>Reset (seguro)</h2>
+  <div class="note" style="margin-bottom:10px">
+    <strong>Tip:</strong> Antes de borrar, exporta tu JSON (Respaldo) y guárdalo en Notas.
+  </div>
+
+  <div class="btnRow" style="grid-template-columns:1fr 1fr; gap:12px">
+    <button id="resetSessionBtn" class="action" style="background:#60a5fa;color:#08182a">Reset sesión</button>
+    <button id="resetAllBtn" class="action" style="background:#ef4444;color:#0b0f0c">Reset todo</button>
+  </div>
+
+  <div class="note" style="margin-top:10px; opacity:.9">
+    <div>• <strong>Reset sesión</strong>: elimina los tiros de la sesión actual y crea una sesión nueva.</div>
+    <div>• <strong>Reset todo</strong>: borra todos tus tiros y configuración guardada (usa primero Respaldo JSON).</div>
+  </div>
+
+  <div class="statusRow" style="margin-top:10px">
+    <span>Estado:</span>
+    <strong id="resetStatus">—</strong>
+  </div>
+</section>
+
+<footer>Golf Log · B6.0 (reset seguro + respaldo JSON iOS) · PWA</footer>
 
 <script>
 /* ===== ESTADO / STORAGE ===== */
@@ -582,6 +605,73 @@ function nuevaSesion(){
   save(); render();
 }
 nuevaSesionBtn.onclick = nuevaSesion;
+
+/* ===== RESET SEGURO ===== */
+function setResetStatus(msg){
+  const el = document.getElementById("resetStatus");
+  if(el) el.textContent = msg;
+}
+
+function backupLooksValid(){
+  const ta = document.getElementById("backupJson");
+  if(!ta) return false;
+  const t = (ta.value||"").trim();
+  // Señales mínimas
+  return t.startsWith("{") && (t.includes('"__app"') || t.includes('"state"'));
+}
+
+function resetSesionActual(){
+  try{
+    // Confirmación fuerte (sin riesgos)
+    if(!confirm("Reset sesión: eliminará los tiros de la sesión actual. ¿Continuar?")) return;
+    const k = prompt('Escribe "SESION" para confirmar:');
+    if((k||"").trim().toUpperCase() !== "SESION"){
+      setResetStatus("Cancelado");
+      return;
+    }
+
+    const currentId = state.session?.id;
+    if(currentId){
+      state.shots = (state.shots||[]).filter(sh => sh.sessionId !== currentId);
+    }
+    // Crear sesión nueva (mantiene totales del resto)
+    nuevaSesion();
+    setResetStatus("Sesión reseteada ✅");
+  }catch(e){
+    setResetStatus("Error al resetear sesión ❌");
+  }
+}
+
+function resetTodo(){
+  try{
+    if(!confirm("Reset TODO: borrará todos tus tiros y datos locales. ¿Continuar?")) return;
+
+    // Pedimos respaldo primero (recomendado, pero no obligatorio)
+    if(!backupLooksValid()){
+      const ok = confirm("No detecto un JSON exportado en el cuadro. ¿Seguro que quieres continuar SIN respaldo?");
+      if(!ok) { setResetStatus("Cancelado"); return; }
+    }
+
+    const k = prompt('Escribe "BORRAR TODO" para confirmar:');
+    if((k||"").trim().toUpperCase() !== "BORRAR TODO"){
+      setResetStatus("Cancelado");
+      return;
+    }
+
+    localStorage.removeItem(STORAGE);
+    setResetStatus("Borrado total ✅ (recargando...)");
+    // Recargar para re-inicializar estado limpio
+    setTimeout(()=>location.reload(), 400);
+  }catch(e){
+    setResetStatus("Error al resetear todo ❌");
+  }
+}
+
+const resetSessionBtn = document.getElementById("resetSessionBtn");
+const resetAllBtn = document.getElementById("resetAllBtn");
+if(resetSessionBtn) resetSessionBtn.onclick = resetSesionActual;
+if(resetAllBtn) resetAllBtn.onclick = resetTodo;
+
 
 /* ===== GUARDAR / DESHACER ===== */
 guardarBtn.onclick=()=>{
