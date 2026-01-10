@@ -151,7 +151,15 @@
     .mini{color:var(--muted);font-size:13px;line-height:1.35;margin-top:10px}
     .hidden{display:none !important}
     .footer{text-align:center;margin-top:18px;color:rgba(233,255,246,.55);font-size:12px}
-  </style>
+  
+  .tableWrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; width:100%; }
+  .table{ width:100%; border-collapse:collapse; }
+  .table th,.table td{ padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.08); white-space:nowrap; }
+  .table th{ font-weight:700; color:rgba(255,255,255,.75); text-transform:none; letter-spacing:.02em; font-size:14px; }
+  .table td.num,.table th.num{ text-align:right; }
+  .tableWrap .table{ min-width:560px; }
+
+</style>
 </head>
 <body>
   <div class="container">
@@ -220,7 +228,7 @@
         <div><b id="lblSession">S1</b></div>
       </div>
 
-      <div id="historyWrap"></div>
+      <div id="historyWrap" class="tableWrap"></div>
     </div>
 
     <div class="card">
@@ -245,7 +253,7 @@
       <div class="title" style="font-size:24px;margin:0 0 6px">Alcances por palo (Totales)</div>
       <div class="pill"><span class="muted">Base:</span> <strong>solo tiros con distancia (range)</strong></div>
       <div class="mini" id="rangesHint"></div>
-      <div id="rangesTableWrap"></div>
+      <div id="rangesTableWrap" class="tableWrap"></div>
     </div>
 
     <div class="card">
@@ -365,6 +373,19 @@ function normalizeShot(s){
 
   return out;
 }
+  function evalShot(s){
+    // Solo aplica para tiros "range" con distancia y referencia (min-max) del palo.
+    if(!s) return "—";
+    if(s.mode !== "range") return "—";
+    const d = s.dist;
+    if(typeof d !== "number" || !isFinite(d)) return "—";
+    const ref = RANGE_REF[s.club];
+    if(!ref) return "—";
+    if(d < ref.min) return "Corto";
+    if(d > ref.max) return "Largo";
+    return "OK";
+  }
+
 
 function normalizeState(d){
   if(!d || typeof d!=="object") d = normalizeState(d);
@@ -514,173 +535,55 @@ function load(){
   }
 
   function renderHistory(){
-    el.lblSession.textContent = sessionLabel();
     const tab = state.ui.historyTab || "session";
-    const shots = (tab==="session")
-      ? state.shots.filter(s => s.session === state.currentSession)
-      : state.shots.slice();
+    const isTotals = tab === "totals";
 
-    if(shots.length === 0){
-      el.historyWrap.innerHTML = `<div class="mini">Aún no hay tiros.</div>`;
+    el.sessionLabel.textContent = isTotals ? "Totales" : ("S" + state.currentSession);
+
+    const list = isTotals
+      ? state.shots.slice()
+      : state.shots.filter(s => s.session === state.currentSession);
+
+    if(list.length === 0){
+      el.historyWrap.innerHTML = isTotals
+        ? '<div class="mini">Aún no hay tiros totales.</div>'
+        : '<div class="mini">Aún no hay tiros.</div>';
       return;
     }
 
-    if(tab==="session"){
-      const rows = shots.map((s, idx) => `
-        <tr>
-          <td class="num">${shots.length - idx}</td>
-          <td>${s.mode}</td>
-          <td>${s.club}</td>
-        </tr>
-      `).join("");
-      el.historyWrap.innerHTML = `
-        <table class="table">
-          <thead><tr><th>#</th><th>Modo</th><th>Palo</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      `;
-      return;
-    }
+    const rows = list.slice().reverse().map((s, idx) => {
+      const n = list.length - idx;
+      const dir = s.dir || "—";
+      const dist = (typeof s.dist === "number" && isFinite(s.dist)) ? Math.round(s.dist) : "—";
+      const ev = evalShot(s);
+      const ses = "S" + (s.session ?? "—");
+      return `<tr>
+        <td>${n}</td>
+        ${isTotals ? `<td>${ses}</td>` : ``}
+        <td>${s.mode || "—"}</td>
+        <td>${s.club || "—"}</td>
+        <td>${dir}</td>
+        <td class="num">${dist}</td>
+        <td>${ev}</td>
+      </tr>`;
+    }).join("");
 
-    const rows = shots.map((s, idx) => `
-      <tr>
-        <td class="num">${shots.length - idx}</td>
-        <td>${s.mode}</td>
-        <td>${s.club}</td>
-        <td>${s.dir || "—"}</td>
-        <td class="num">${(typeof s.dist === "number") ? s.dist : "—"}</td>
-      </tr>
-    `).join("");
     el.historyWrap.innerHTML = `
       <table class="table">
-        <thead><tr><th>#</th><th>Modo</th><th>Palo</th><th>Dir</th><th class="num">m</th></tr></thead>
+        <thead>
+          <tr>
+            <th>#</th>
+            ${isTotals ? `<th>Ses</th>` : ``}
+            <th>Modo</th>
+            <th>Palo</th>
+            <th>Dir</th>
+            <th class="num">m</th>
+            <th>Eval</th>
+          </tr>
+        </thead>
         <tbody>${rows}</tbody>
       </table>
     `;
-  }
-
-  function renderDispersion(){
-    const shots = state.shots.filter(s => s.session === state.currentSession);
-    const n = shots.length;
-    const count = {Izq:0, Centro:0, Der:0};
-    for(const s of shots){
-      const d = s.dir || "Centro";
-      if(count[d] !== undefined) count[d] += 1;
-    }
-    const pct = (x)=> n ? Math.round((x*100)/n) : 0;
-    const pL=pct(count.Izq), pC=pct(count.Centro), pR=pct(count.Der);
-
-    el.dispL.textContent = `${pL}% (${count.Izq})`;
-    el.dispC.textContent = `${pC}% (${count.Centro})`;
-    el.dispR.textContent = `${pR}% (${count.Der})`;
-
-    el.barL.style.width = `${pL}%`;
-    el.barC.style.width = `${pC}%`;
-    el.barR.style.width = `${pR}%`;
-
-    let bias = "Neutral";
-    if(count.Izq - count.Der >= 3) bias = "Sesgo Izq";
-    if(count.Der - count.Izq >= 3) bias = "Sesgo Der";
-    el.lblBias.textContent = bias;
-  }
-  function exportJSON(){
-    const payload = { __app: APP_NAME, __schema: SCHEMA, __exportedAt: new Date().toISOString(), state };
-    el.txtBackup.value = JSON.stringify(payload, null, 2);
-    el.lblBackupStatus.textContent = "Exportado ✅";
-  }
-
-  async function copyJSON(){
-    const txt = (el.txtBackup.value || "").trim();
-    if(!txt){ toast("Primero exporta o pega un JSON"); return; }
-    try{
-      await navigator.clipboard.writeText(txt);
-      el.lblBackupStatus.textContent = "Copiado ✅";
-      toast("Copiado ✅");
-    }catch(_){
-      try{
-        el.txtBackup.focus();
-        el.txtBackup.select();
-        const ok = document.execCommand("copy");
-        if(ok){
-          el.lblBackupStatus.textContent = "Copiado ✅";
-          toast("Copiado ✅");
-        }else{
-          el.lblBackupStatus.textContent = "No se pudo copiar";
-          toast("No se pudo copiar");
-        }
-      }catch(__){
-        el.lblBackupStatus.textContent = "No se pudo copiar";
-        toast("No se pudo copiar");
-      }
-    }
-  }
-
-  function validateImport(obj){
-    if(!obj || typeof obj !== "object") return "JSON inválido";
-    if(obj.__app !== APP_NAME) return "JSON no corresponde a Golf Log";
-    if(!obj.state || typeof obj.state !== "object") return "Falta state";
-    const st = obj.state;
-    if(st.__app !== APP_NAME) return "state.__app inválido";
-    if(!Array.isArray(st.shots)) return "state.shots inválido";
-    if(!st.ui || typeof st.ui !== "object") return "state.ui inválido";
-    if(typeof st.currentSession !== "number") return "state.currentSession inválido";
-    return null;
-  }
-
-  function importJSON(){
-    const raw = (el.txtBackup.value || "").trim();
-    if(!raw){ toast("Pega un JSON primero"); return; }
-    let obj;
-    try{ obj = JSON.parse(raw); }catch(_){ toast("JSON mal formado"); el.lblBackupStatus.textContent = "JSON mal formado"; return; }
-    const err = validateImport(obj);
-    if(err){ toast(err); el.lblBackupStatus.textContent = "Error: " + err; return; }
-    if(!confirm("Esto sobrescribirá tus datos locales. ¿Importar?")) return;
-
-    state = obj.state;
-    if(!Array.isArray(state.undo)) state.undo = [];
-    if(!state.ui) state.ui = defaultState().ui;
-    if(!state.ui.historyTab) state.ui.historyTab = "session";
-    if(!state.ui.dir) state.ui.dir = "Centro";
-    state.__schema = SCHEMA;
-
-    save();
-    render();
-    el.lblBackupStatus.textContent = "Importado ✅";
-    toast("Importado ✅");
-  }
-
-  function clearBackup(){
-    el.txtBackup.value = "";
-    el.lblBackupStatus.textContent = "—";
-  }
-
-  let tmr = null;
-  function toast(msg){
-    try{
-      let div = document.getElementById("__toast");
-      if(!div){
-        div = document.createElement("div");
-        div.id="__toast";
-        div.style.position="fixed";
-        div.style.left="50%";
-        div.style.transform="translateX(-50%)";
-        div.style.bottom="calc(env(safe-area-inset-bottom) + 16px)";
-        div.style.background="rgba(0,0,0,.65)";
-        div.style.color="white";
-        div.style.padding="10px 14px";
-        div.style.borderRadius="999px";
-        div.style.fontWeight="900";
-        div.style.zIndex="9999";
-        div.style.maxWidth="92vw";
-        div.style.textAlign="center";
-        div.style.fontSize="14px";
-        document.body.appendChild(div);
-      }
-      div.textContent = msg;
-      div.style.opacity="1";
-      clearTimeout(tmr);
-      tmr = setTimeout(()=>{ div.style.opacity="0"; }, 1200);
-    }catch(_){}
   }
 
   function renderRanges(){
