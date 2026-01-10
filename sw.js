@@ -1,55 +1,108 @@
-/* sw.js — B6.2.1 (anti-caché iOS/PWA)
-   - HTML/Navegación: NETWORK FIRST (no-store)
-   - Assets: cache-first
-   - Limpia caches viejos al activar
-*/
-const CACHE_PREFIX = "golf-log-";
-const VERSION = "golf-log-v6.2.1";
-const ASSET_CACHE = `${VERSION}-assets`;
+/* =========================================================
+   Golf Log - Service Worker
+   Soporte OFFLINE para iPhone (Safari / PWA)
+   ========================================================= */
 
+const CACHE_NAME = "golf-log-v1";
+
+/* Archivos esenciales (app shell) */
+const CORE_ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/apple-touch-icon.png"
+];
+
+/* =========================
+   INSTALL
+   ========================= */
 self.addEventListener("install", (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.addAll(CORE_ASSETS);
+      await self.skipWaiting();
+    })()
+  );
 });
 
+/* =========================
+   ACTIVATE
+   ========================= */
 self.addEventListener("activate", (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => (k.startsWith(CACHE_PREFIX) && k !== ASSET_CACHE) ? caches.delete(k) : Promise.resolve()));
-    await self.clients.claim();
-  })());
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+      await self.clients.claim();
+    })()
+  );
 });
 
+/* =========================
+   FETCH
+   ========================= */
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  if (req.method !== "GET") return;
+  const request = event.request;
 
-  const accept = req.headers.get("accept") || "";
-  const isHTML = req.mode === "navigate" || accept.includes("text/html");
+  // Solo GET
+  if (request.method !== "GET") return;
 
+  const url = new URL(request.url);
+
+  // Solo mismo origen
+  if (url.origin !== self.location.origin) return;
+
+  const isHTML =
+    request.mode === "navigate" ||
+    (request.headers.get("accept") || "").includes("text/html");
+
+  /* ---------- HTML: network first ---------- */
   if (isHTML) {
-    event.respondWith((async () => {
-      try {
-        return await fetch(req, { cache: "no-store" });
-      } catch (e) {
-        const cached = await caches.match(req, { ignoreSearch: true });
-        return cached || Response.error();
-      }
-    })());
+    event.respondWith(
+      (async () => {
+        try {
+          const networkResponse = await fetch(request);
+          const cache = await caches.open(CACHE_NAME);
+          cache.put("./index.html", networkResponse.clone());
+          return networkResponse;
+        } catch (error) {
+          const cachedResponse = await caches.match("./index.html");
+          return (
+            cachedResponse ||
+            new Response("Golf Log está offline", {
+              status: 503,
+              headers: { "Content-Type": "text/plain" }
+            })
+          );
+        }
+      })()
+    );
     return;
   }
 
-  event.respondWith((async () => {
-    const cached = await caches.match(req, { ignoreSearch: true });
-    if (cached) return cached;
+  /* ---------- Assets: cache first ---------- */
+  event.respondWith(
+    (async () => {
+      const cached = await caches.match(request);
+      if (cached) return cached;
 
-    const res = await fetch(req);
-    try{
-      const url = new URL(req.url);
-      if(url.origin === self.location.origin){
-        const cache = await caches.open(ASSET_CACHE);
-        cache.put(req, res.clone()).catch(()=>{});
+      try {
+        const networkResponse = await fetch(request);
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(request, networkResponse.clone());
+        return networkResponse;
+      } catch (error) {
+        return new Response("", { status: 504 });
       }
-    }catch(_){}
-    return res;
-  })());
+    })()
+  );
 });
