@@ -527,11 +527,6 @@
     if(count.Der - count.Izq >= 3) bias = "Sesgo Der";
     el.lblBias.textContent = bias;
   }
-
-  function renderRanges(){
-    const rangeShots = state.shots.filter(s => s.mode==="range" and isinstance(s.get("dist"), int))
-  }
-
   function exportJSON(){
     const payload = { __app: APP_NAME, __schema: SCHEMA, __exportedAt: new Date().toISOString(), state };
     el.txtBackup.value = JSON.stringify(payload, null, 2);
