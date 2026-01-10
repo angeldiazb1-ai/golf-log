@@ -225,7 +225,38 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 
 </section>
 
-<footer>Golf Log · B4.3.1 (fix botones + alcances por palo) · PWA</footer>
+
+<!-- RESPALDO (JSON) -->
+<section class="card" id="backupCard">
+<h2>Respaldo (JSON)</h2>
+<div class="pill" style="margin-top:0;">
+  <span>Tip:</span><strong>Exporta antes de actualizar</strong>
+</div>
+
+<textarea id="backupJson" rows="8" style="width:100%;margin-top:12px;padding:12px;border-radius:14px;border:2px solid #2e7d5b;background:#0d2f22;color:var(--text);font-size:13px;line-height:1.35;"
+  placeholder="Aquí aparecerá tu respaldo (Exportar) o pega aquí un JSON para Importar…"></textarea>
+
+<div class="row" style="margin-top:12px;">
+  <button id="exportBtn" class="action" style="background:#34d399;color:#062317;">Exportar</button>
+  <button id="copyBtn" class="action" style="background:#fbbf24;color:#3a2a00;">Copiar</button>
+</div>
+
+<div class="row" style="margin-top:12px;">
+  <button id="importBtn" class="action" style="background:#60a5fa;color:#081827;">Importar</button>
+  <button id="clearBtn" class="action" style="background:#334155;color:#e2e8f0;">Limpiar</button>
+</div>
+
+<div class="pill" id="backupStatus" style="margin-top:12px;">
+  <span>Estado:</span><strong>—</strong>
+</div>
+
+<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.35;">
+  Importar <strong>sobrescribe</strong> tus datos locales (con confirmación). Si algo sale mal, pega aquí tu JSON y vuelve a importarlo.
+</div>
+</section>
+
+
+<footer>Golf Log · B5.0 (respaldo JSON) · PWA</footer>
 
 <script>
 /* ===== ESTADO / STORAGE ===== */
@@ -302,6 +333,135 @@ return s;
 })();
 
 function save(){ localStorage.setItem(STORAGE, JSON.stringify(state)); }
+
+/* ===== RESPALDO JSON ===== */
+function setBackupStatus(msg){
+  const el = document.getElementById("backupStatus");
+  if(!el) return;
+  el.innerHTML = `<span>Estado:</span><strong>${msg}</strong>`;
+}
+
+function snapshotForBackup(){
+  return {
+    __app: "golf-log",
+    __schema: 1,
+    __exportedAt: new Date().toISOString(),
+    state
+  };
+}
+
+function validateAndMigrateBackup(payload){
+  // Acepta: {state:{...}} o estado directo {...}
+  let s = payload;
+  if(payload && typeof payload === "object" && payload.state && typeof payload.state === "object"){
+    s = payload.state;
+  }
+  if(!s || typeof s !== "object") throw new Error("JSON inválido (no es objeto).");
+
+  // Validaciones mínimas
+  if(!Array.isArray(s.shots)) s.shots = [];
+  if(!s.modo) s.modo = "range";
+  if(!s.palo) s.palo = "Driver";
+  if(!s.dir) s.dir = "Centro";
+  if(typeof s.zonaKey === "undefined") s.zonaKey = null;
+  if(!s.historyView) s.historyView = "session";
+
+  // Sesión
+  if(!s.session || !s.session.id){
+    const last = s.shots.length ? s.shots[s.shots.length-1] : null;
+    const sid = (last && last.sessionId) ? String(last.sessionId) : genSessionId();
+    s.session = { id: sid, n: 1 };
+  }
+  if(typeof s.nextSessionNum !== "number") s.nextSessionNum = (s.session?.n || 1) + 1;
+
+  // Migración sessionId a string
+  s.shots.forEach(sh=>{
+    if(!sh.sessionId){
+      sh.sessionId = s.session.id;
+    }else if(typeof sh.sessionId !== "string"){
+      sh.sessionId = "legacy_" + String(sh.sessionId);
+    }
+    if(!sh.dir) sh.dir = "Centro";
+    if(!sh.palo) sh.palo = "Driver";
+    if(!sh.modo) sh.modo = "range";
+    if(!sh.eval || typeof sh.eval !== "object"){
+      sh.eval = {l:"—",c:"neutral"};
+    }
+  });
+
+  // Presets del build actual (si están)
+  if(!s.clubRanges && state.clubRanges) s.clubRanges = state.clubRanges;
+  if(!s.clubTargets && state.clubTargets) s.clubTargets = state.clubTargets;
+
+  return s;
+}
+
+function setupBackupUI(){
+  const ta = document.getElementById("backupJson");
+  const exportBtn = document.getElementById("exportBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const importBtn = document.getElementById("importBtn");
+  const clearBtn = document.getElementById("clearBtn");
+
+  if(!ta || !exportBtn || !copyBtn || !importBtn || !clearBtn) return;
+
+  exportBtn.onclick = ()=>{
+    try{
+      const snap = snapshotForBackup();
+      ta.value = JSON.stringify(snap, null, 2);
+      setBackupStatus("Exportado ✅ (copia y guarda este JSON)");
+    }catch(e){
+      setBackupStatus("Error al exportar ❌");
+    }
+  };
+
+  copyBtn.onclick = async ()=>{
+    try{
+      if(!ta.value.trim()){
+        setBackupStatus("No hay JSON para copiar");
+        return;
+      }
+      await navigator.clipboard.writeText(ta.value);
+      setBackupStatus("Copiado ✅");
+    }catch(e){
+      setBackupStatus("No se pudo copiar en iPhone ❌");
+    }
+  };
+
+  clearBtn.onclick = ()=>{
+    ta.value = "";
+    setBackupStatus("—");
+  };
+
+  importBtn.onclick = ()=>{
+    try{
+      const raw = ta.value.trim();
+      if(!raw){
+        setBackupStatus("Pega un JSON primero");
+        return;
+      }
+      let payload;
+      try{ payload = JSON.parse(raw); }
+      catch{ throw new Error("JSON mal formado."); }
+
+      const migrated = validateAndMigrateBackup(payload);
+
+      const ok = confirm("IMPORTAR sobrescribirá tus datos locales en este dispositivo. ¿Deseas continuar?");
+      if(!ok){
+        setBackupStatus("Importación cancelada");
+        return;
+      }
+
+      state = migrated;
+      save();
+      render();
+setupBackupUI();
+      setBackupStatus("Importado ✅ (datos restaurados)");
+    }catch(e){
+      setBackupStatus("Error: " + (e.message || "Importación fallida"));
+    }
+  };
+}
 
 /* ===== HELPERS UI ⇄ ESTADO ===== */
 function syncPaloFromUI(){
