@@ -334,7 +334,63 @@
 
   let state = load();
 
-  function load(){
+  
+// ===== B6.2.3 (compat): normalización/migración de tiros guardados =====
+function normalizeShot(s){
+  if(!s || typeof s!=="object") return null;
+  const out = {...s};
+
+  // modo
+  if(typeof out.mode==="string") out.mode = out.mode.toLowerCase().trim();
+
+  // club (compat)
+  if(out.palo && !out.club) out.club = out.palo;
+  if(out.club && typeof out.club==="string") out.club = out.club.trim();
+
+  // dirección
+  if(out.dir && typeof out.dir==="string") out.dir = out.dir.trim();
+
+  // distancia (compat): dist | m | distance | meters
+  const cand = (out.dist ?? out.m ?? out.distance ?? out.meters);
+  const num = (cand === "" || cand === null || cand === undefined) ? NaN : Number(cand);
+  if(Number.isFinite(num)) out.dist = num;
+
+  // limpia alias viejos
+  if("m" in out) delete out.m;
+  if("distance" in out) delete out.distance;
+  if("meters" in out) delete out.meters;
+
+  // sesión (compat)
+  if(out.session == null && out.ses != null) out.session = out.ses;
+
+  return out;
+}
+
+function normalizeState(d){
+  if(!d || typeof d!=="object") d = normalizeState(d);
+  save(d);
+  return d;
+
+  if(Array.isArray(d.shots)){
+    const norm=[];
+    for(const s of d.shots){
+      const ns = normalizeShot(s);
+      if(ns) norm.push(ns);
+    }
+    d.shots = norm;
+  }
+
+  // currentSession puede venir como "S4"
+  if(typeof d.currentSession==="string"){
+    const m = d.currentSession.match(/S(\d+)/i);
+    if(m) d.currentSession = Number(m[1]);
+  }
+
+  return d;
+}
+// ======================================================================
+
+function load(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
       if(!raw) return defaultState();
