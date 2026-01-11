@@ -282,6 +282,49 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 <footer>Golf Log · B6.0 (reset seguro + respaldo JSON iOS) · PWA</footer>
 
 <script>
+// --- iOS Safari fix: bind DOM refs explicitly (do NOT rely on window[id] globals) ---
+const $ = (id) => document.getElementById(id);
+
+const palo = $('palo');
+const distancia = $('distancia');
+const seg = $('seg');
+const segBtns = $('segBtns');
+const guardarBtn = $('guardarBtn');
+const deshacerBtn = $('deshacerBtn');
+const history = $('history');
+
+const modeBtns = $('modeBtns');
+const rangePanel = $('rangePanel');
+const zonaPanel = $('zonaPanel');
+const zonaSelect = $('zonaSelect');
+const zonaInfo = $('zonaInfo');
+const evalPanel = $('evalPanel');
+const objPanel = $('objPanel');
+
+const evalTarget = $('evalTarget');
+const objTarget = $('objTarget');
+
+const barL = $('barL');
+const barC = $('barC');
+const barR = $('barR');
+
+const lastShot = $('lastShot');
+const avgWrap = $('avgWrap');
+const avgVal = $('avgVal');
+const summary = $('summary');
+
+const badgeSW = $('badgeSW');
+const badgeJS = $('badgeJS');
+
+const exportJson = $('exportJson');
+const backupJson = $('backupJson');
+
+const rangeSelect = $('rangeSelect');
+const rangeAddr = $('rangeAddr');
+const rangeDist = $('rangeDist');
+
+const installBtn = $('installBtn');
+
 /* ===== ESTADO / STORAGE ===== */
 const STORAGE="golf-log-data";
 
@@ -970,10 +1013,12 @@ setupBackupUI();
 initTargetsUI();
 renderClubStats();
 
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js");
+// Service Worker (Safari-safe)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
 }
-
 </script>
 </body>
 </html>

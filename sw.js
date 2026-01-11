@@ -1,108 +1,97 @@
-/* =========================================================
-   Golf Log - Service Worker
-   Soporte OFFLINE para iPhone (Safari / PWA)
-   ========================================================= */
+/* Golf Log PWA — Service Worker (B6.2 STABLE)
+   Estrategia:
+   - HTML (navegación): network-first (evita pantallas viejas)
+   - Assets: stale-while-revalidate
+*/
+'use strict';
 
-const CACHE_NAME = "golf-log-v1";
+const VERSION = 'B6.2-stable-refsfix';
+const CACHE_PREFIX = 'golf-log';
+const CACHE_NAME = `${CACHE_PREFIX}-${VERSION}`;
 
-/* Archivos esenciales (app shell) */
-const CORE_ASSETS = [
-  "./",
-  "./index.html",
-  "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png"
+const PRECACHE_URLS = [
+  './',
+  './index.html',
+  './manifest.webmanifest'
 ];
 
-/* =========================
-   INSTALL
-   ========================= */
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    (async () => {
-      const cache = await caches.open(CACHE_NAME);
-      await cache.addAll(CORE_ASSETS);
-      await self.skipWaiting();
-    })()
-  );
+const isSameOrigin = (url) => url.origin === self.location.origin;
+
+self.addEventListener('install', (event) => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    try { await cache.addAll(PRECACHE_URLS); } catch (e) {}
+    self.skipWaiting();
+  })());
 });
 
-/* =========================
-   ACTIVATE
-   ========================= */
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-      await self.clients.claim();
-    })()
-  );
-});
-
-/* =========================
-   FETCH
-   ========================= */
-self.addEventListener("fetch", (event) => {
-  const request = event.request;
-
-  // Solo GET
-  if (request.method !== "GET") return;
-
-  const url = new URL(request.url);
-
-  // Solo mismo origen
-  if (url.origin !== self.location.origin) return;
-
-  const isHTML =
-    request.mode === "navigate" ||
-    (request.headers.get("accept") || "").includes("text/html");
-
-  /* ---------- HTML: network first ---------- */
-  if (isHTML) {
-    event.respondWith(
-      (async () => {
-        try {
-          const networkResponse = await fetch(request);
-          const cache = await caches.open(CACHE_NAME);
-          cache.put("./index.html", networkResponse.clone());
-          return networkResponse;
-        } catch (error) {
-          const cachedResponse = await caches.match("./index.html");
-          return (
-            cachedResponse ||
-            new Response("Golf Log está offline", {
-              status: 503,
-              headers: { "Content-Type": "text/plain" }
-            })
-          );
-        }
-      })()
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.map((key) => {
+        const isOurCache = key.startsWith(`${CACHE_PREFIX}-`);
+        const isCurrent = key === CACHE_NAME;
+        if (isOurCache && !isCurrent) return caches.delete(key);
+        return Promise.resolve();
+      })
     );
+    await self.clients.claim();
+  })());
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  if (req.method !== 'GET') return;
+  if (!isSameOrigin(url)) return;
+
+  const isNavigation = req.mode === 'navigate';
+  const accept = req.headers.get('accept') || '';
+  const isHTML = accept.includes('text/html');
+  const isIndex = url.pathname.endsWith('/') || url.pathname.endsWith('/index.html');
+
+  if (isNavigation || isHTML || isIndex) {
+    event.respondWith(networkFirst(req));
     return;
   }
 
-  /* ---------- Assets: cache first ---------- */
-  event.respondWith(
-    (async () => {
-      const cached = await caches.match(request);
-      if (cached) return cached;
+  event.respondWith(staleWhileRevalidate(req));
+});
 
-      try {
-        const networkResponse = await fetch(request);
-        const cache = await caches.open(CACHE_NAME);
-        cache.put(request, networkResponse.clone());
-        return networkResponse;
-      } catch (error) {
-        return new Response("", { status: 504 });
-      }
-    })()
-  );
+async function networkFirst(req) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const fresh = await fetch(req, { cache: 'no-store' });
+    if (fresh && fresh.ok) await cache.put(req, fresh.clone());
+    return fresh;
+  } catch (e) {
+    const cached = await cache.match(req);
+    if (cached) return cached;
+    const fallback = await cache.match('./index.html');
+    if (fallback) return fallback;
+    return new Response('Offline', { status: 503, statusText: 'Offline' });
+  }
+}
+
+async function staleWhileRevalidate(req) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(req);
+
+  const fetchPromise = (async () => {
+    try {
+      const fresh = await fetch(req);
+      if (fresh && fresh.ok) await cache.put(req, fresh.clone());
+      return fresh;
+    } catch {
+      return null;
+    }
+  })();
+
+  return cached || (await fetchPromise) || new Response('', { status: 504 });
+}
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
