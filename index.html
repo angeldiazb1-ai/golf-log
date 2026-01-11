@@ -3,423 +3,441 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#0b3a2e" />
+  <meta name="theme-color" content="#0b3a2a" />
   <title>Golf Log – Práctica</title>
+
+  <!-- No Service Worker (B7 base estable) -->
 
   <style>
     :root{
-      --bg:#073228;
-      --panel:#0b3a2e;
-      --card:#0d4637;
-      --text:#e9fff6;
-      --muted:#b9e7d6;
-      --btn:#1c9a62;
-      --btn2:#15794d;
-      --warn:#b38b00;
-      --danger:#d9534f;
+      --bg:#062e22;
+      --card:#0b3a2a;
+      --card2:#0a3426;
+      --txt:#e9fff6;
+      --muted:rgba(233,255,246,.75);
+      --btn:#1f9d64;
+      --danger:#c43b3b;
+      --warn:#b08b1a;
+      --chip:#103f2f;
+      --border:rgba(233,255,246,.10);
       --shadow: 0 10px 30px rgba(0,0,0,.25);
-      --radius: 22px;
+      --radius:18px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
       margin:0;
-      background: radial-gradient(1200px 800px at 50% -150px, rgba(255,255,255,.12), transparent 60%),
-                  linear-gradient(180deg, #063025, #062a22);
-      color:var(--text);
-      font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom) 14px;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 900px at 50% -200px, #0f5b41 0%, var(--bg) 60%);
+      color:var(--txt);
+      -webkit-font-smoothing:antialiased;
+      line-height:1.25;
     }
+    .wrap{max-width:820px;margin:0 auto;padding:18px 16px 28px}
     header{
-      display:flex; align-items:center; justify-content:center;
-      padding: 18px 0 14px;
-      position: sticky;
-      top: 0;
-      background: linear-gradient(180deg, rgba(6,42,34,.92), rgba(6,42,34,.65));
-      backdrop-filter: blur(8px);
-      z-index: 10;
+      position:sticky;top:0;z-index:20;
+      padding:10px 0 14px;
+      backdrop-filter:saturate(180%) blur(12px);
+      background:linear-gradient(to bottom, rgba(6,46,34,.92), rgba(6,46,34,.55));
+      border-bottom:1px solid rgba(233,255,246,.06);
     }
-    header h1{
-      margin:0;
-      font-size: 22px;
-      letter-spacing:.2px;
-      font-weight: 800;
-      display:flex;
-      align-items:center;
-      gap:10px;
+    .title{
+      display:flex;align-items:center;gap:10px;
+      font-weight:800;font-size:22px;letter-spacing:.2px;
+      padding:8px 6px;
     }
-    header .dot{
-      width:10px; height:10px; border-radius:999px;
-      background: #43e29f;
-      box-shadow: 0 0 0 6px rgba(67,226,159,.12);
-    }
-
-    .wrap{max-width: 520px; margin: 0 auto;}
+    .title .emoji{font-size:22px}
+    .grid{display:grid;gap:14px;margin-top:14px}
     .card{
-      background: rgba(13,70,55,.92);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow);
-      margin: 14px 0;
+      background:linear-gradient(180deg, rgba(11,58,42,.92), rgba(10,52,38,.92));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
     }
-
-    label{
-      display:block;
-      font-size: 14px;
-      color: var(--muted);
-      margin: 10px 0 8px;
-      font-weight: 700;
-      letter-spacing: .2px;
-    }
-    select, input{
+    .card h2{margin:2px 0 12px;font-size:18px}
+    label{display:block;font-size:14px;color:var(--muted);margin:10px 0 8px}
+    select,input{
       width:100%;
-      height:56px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      color: var(--text);
-      padding: 0 14px;
-      font-size: 18px;
-      outline: none;
-      -webkit-appearance: none;
-      appearance: none;
+      font-size:18px;
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid rgba(233,255,246,.12);
+      background:rgba(0,0,0,.35);
+      color:var(--txt);
+      outline:none;
     }
-    input::placeholder{color: rgba(233,255,246,.45)}
-    .row{display:flex; gap:10px}
-    .row > *{flex:1}
-
+    input::placeholder{color:rgba(233,255,246,.35)}
+    .row{display:grid;gap:12px}
+    @media(min-width:720px){ .row{grid-template-columns:1fr 1fr} }
     .seg{
-      display:flex;
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
       gap:10px;
-      margin-top: 8px;
+      margin-top:6px;
     }
     .seg button{
-      flex:1;
-      height:56px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-      color: rgba(233,255,246,.55);
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: .2px;
-      box-shadow: 0 8px 20px rgba(0,0,0,.18);
-      /* iOS tap */
+      padding:14px 12px;
+      border-radius:16px;
+      border:1px solid rgba(233,255,246,.12);
+      background:rgba(0,0,0,.22);
+      color:rgba(233,255,246,.85);
+      font-size:18px;
+      font-weight:700;
+      cursor:pointer;
+      user-select:none;
       -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
     }
     .seg button.active{
-      background: rgba(28,154,98,.92);
-      border-color: rgba(67,226,159,.35);
-      color: #062a22;
+      background:rgba(31,157,100,.92);
+      border-color:rgba(31,157,100,.95);
+      color:#062e22;
     }
-
     .actions{
-      display:flex;
+      display:grid;
+      grid-template-columns:1fr 1fr;
       gap:12px;
-      margin-top: 14px;
+      margin-top:14px;
     }
-    .actions button{
-      flex:1;
-      height:64px;
-      border-radius: 18px;
-      border: none;
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing:.2px;
-      color: #062a22;
-      background: linear-gradient(180deg, var(--btn), var(--btn2));
-      box-shadow: 0 12px 28px rgba(0,0,0,.25);
+    .btn{
+      padding:14px 14px;
+      border-radius:16px;
+      border:0;
+      background:var(--btn);
+      color:#052317;
+      font-weight:900;
+      font-size:18px;
+      cursor:pointer;
+      user-select:none;
       -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
     }
-    .actions button.secondary{
-      background: linear-gradient(180deg, #c9a200, #a88400);
-      color: #1f1a00;
-    }
-    .actions button.danger{
-      background: linear-gradient(180deg, #ff6a66, #d9534f);
-      color: #2b0908;
-    }
-
-    .pill{
-      display:inline-flex;
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:rgba(233,255,246,.10); color:var(--txt); border:1px solid rgba(233,255,246,.14)}
+    .btn.warn{background:rgba(176,139,26,.95); color:#1f1600}
+    .btn.danger{background:rgba(196,59,59,.95); color:#240606}
+    .meta{
+      margin-top:10px;
+      display:flex;gap:8px;flex-wrap:wrap;
+      color:rgba(233,255,246,.72);
+      font-size:13px;
       align-items:center;
-      gap:8px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.18);
-      border: 1px solid rgba(255,255,255,.08);
-      color: rgba(233,255,246,.85);
-      font-weight: 800;
-      margin-top: 12px;
-      font-size: 13px;
     }
-    .muted{color: rgba(233,255,246,.65)}
-
-    h2{
-      margin: 4px 0 10px;
-      font-size: 22px;
-      font-weight: 950;
-      letter-spacing:.2px;
+    .pill{
+      background:rgba(16,63,47,.85);
+      border:1px solid rgba(233,255,246,.10);
+      padding:8px 10px;border-radius:999px;
     }
-    ul{
-      list-style: none;
-      padding: 0;
-      margin: 10px 0 0;
+    .table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid rgba(233,255,246,.10);
+      margin-top:10px;
     }
-    li{
-      padding: 10px 12px;
-      margin: 8px 0;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.16);
-      font-weight: 800;
-      letter-spacing:.2px;
+    .table th, .table td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(233,255,246,.08);
+      font-size:14px;
     }
-    .small{
-      font-size: 12px;
-      opacity:.8;
-      margin-top: 8px;
-      line-height: 1.35;
+    .table th{
+      text-align:left;
+      color:rgba(233,255,246,.8);
+      background:rgba(0,0,0,.16);
+      font-weight:800;
     }
+    .table tr:last-child td{border-bottom:0}
+    .right{text-align:right}
+    .muted{color:rgba(233,255,246,.72)}
+    .empty{
+      padding:12px 10px;
+      color:rgba(233,255,246,.65);
+      border:1px dashed rgba(233,255,246,.14);
+      border-radius:14px;
+      background:rgba(0,0,0,.12);
+      margin-top:10px;
+    }
+    .tiny{font-size:12px;color:rgba(233,255,246,.60)}
   </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <header>
-      <h1><span class="dot"></span> Golf Log – Práctica</h1>
-    </header>
+  <header>
+    <div class="wrap">
+      <div class="title"><span class="emoji">⛳️</span> Golf Log – Práctica</div>
+    </div>
+  </header>
 
-    <section class="card">
-      <label for="clubSel">Palo</label>
-      <select id="clubSel">
-        <option value="">Selecciona</option>
-        <option>Driver</option>
-        <option>3W</option>
-        <option>5W</option>
-        <option>3H</option>
-        <option>4H</option>
-        <option>4I</option>
-        <option>5I</option>
-        <option>6I</option>
-        <option>7I</option>
-        <option>8I</option>
-        <option>9I</option>
-        <option>PW</option>
-        <option>GW</option>
-        <option>SW56</option>
-        <option>LW</option>
-        <option>Putter</option>
-      </select>
+  <main class="wrap">
+    <div class="grid">
 
-      <label for="distInput">Distancia (m)</label>
-      <input id="distInput" inputmode="numeric" placeholder="Ej. 183" />
+      <section class="card" id="capturaCard">
+        <h2>Captura</h2>
 
-      <label>Dirección</label>
-      <div class="seg" role="group" aria-label="Dirección">
-        <button id="dirIzqBtn" type="button" data-dir="Izq">Izq</button>
-        <button id="dirCentroBtn" type="button" data-dir="Centro" class="active">Centro</button>
-        <button id="dirDerBtn" type="button" data-dir="Der">Der</button>
-      </div>
+        <div class="row">
+          <div>
+            <label for="clubSel">Palo</label>
+            <select id="clubSel" autocomplete="off">
+              <option value="">Selecciona</option>
+              <option>Driver</option>
+              <option>3W</option><option>5W</option>
+              <option>3H</option><option>4H</option>
+              <option>3I</option><option>4I</option><option>5I</option><option>6I</option><option>7I</option><option>8I</option><option>9I</option>
+              <option>PW</option><option>GW</option><option>SW</option><option>LW</option>
+              <option>Putter</option>
+            </select>
+          </div>
 
-      <div class="actions">
-        <button id="guardarBtn" type="button">Guardar golpe</button>
-        <button id="deshacerBtn" type="button" class="secondary">Deshacer</button>
-      </div>
+          <div>
+            <label for="distIn">Distancia (m)</label>
+            <input id="distIn" inputmode="numeric" pattern="[0-9]*" placeholder="Ej. 183" autocomplete="off" />
+          </div>
+        </div>
 
-      <div class="pill" id="statusPill">✅ JS activo · <span class="muted" id="versionTxt"></span></div>
-      <div class="small muted" id="lastTxt">Último: —</div>
-    </section>
+        <label>Dirección</label>
+        <div class="seg" role="group" aria-label="Dirección">
+          <button id="dirIzq" type="button" data-dir="Izq">Izq</button>
+          <button id="dirCentro" type="button" data-dir="Centro" class="active">Centro</button>
+          <button id="dirDer" type="button" data-dir="Der">Der</button>
+        </div>
 
-    <section class="card">
-      <h2>Histórico</h2>
-      <div class="actions">
-        <button id="borrarTodoBtn" type="button" class="danger">Borrar histórico</button>
-      </div>
-      <ul id="histList"></ul>
-      <div class="small muted">Guardado local en este iPhone (localStorage). Sin Service Worker.</div>
-    </section>
-  </div>
+        <div class="actions">
+          <button class="btn" id="guardarBtn" type="button">Guardar golpe</button>
+          <button class="btn warn" id="deshacerBtn" type="button">Deshacer</button>
+        </div>
 
-  <script>
-    (function(){
-      "use strict";
+        <div class="actions">
+          <button class="btn secondary" id="borrarSesionBtn" type="button">Borrar sesión</button>
+          <button class="btn danger" id="borrarTodoBtn" type="button">Borrar todo</button>
+        </div>
 
-      const APP_VERSION = "B7.0-base-iOS-sinSW";
-      const LS_KEY = "golfLog_shots_v7";
+        <div class="meta">
+          <span class="pill" id="estadoPill">JS: activo ✓</span>
+          <span class="pill" id="contPill">Tiros sesión: 0</span>
+          <span class="tiny">B7.1 – estable iOS (sin SW)</span>
+        </div>
+      </section>
 
-      // --- helpers
-      const $ = (id) => document.getElementById(id);
-      const safeParse = (s, fallback) => { try { return JSON.parse(s); } catch { return fallback; } };
+      <section class="card">
+        <h2>Histórico (sesión)</h2>
+        <div id="histWrap"></div>
+      </section>
 
-      // --- state
-      let shots = safeParse(localStorage.getItem(LS_KEY), []);
-      if (!Array.isArray(shots)) shots = [];
-      let currentDir = "Centro";
+      <section class="card">
+        <h2>Totales (sesión)</h2>
+        <div id="totWrap"></div>
+      </section>
 
-      // --- DOM
-      const clubSel = $("clubSel");
-      const distInput = $("distInput");
-      const lastTxt = $("lastTxt");
-      const histList = $("histList");
-      const versionTxt = $("versionTxt");
+    </div>
+  </main>
 
-      const dirButtons = [
-        $("dirIzqBtn"),
-        $("dirCentroBtn"),
-        $("dirDerBtn")
-      ];
+<script>
+(() => {
+  "use strict";
 
-      const guardarBtn = $("guardarBtn");
-      const deshacerBtn = $("deshacerBtn");
-      const borrarTodoBtn = $("borrarTodoBtn");
+  const LS_KEY = "golfLog_b7_sessionShots_v1";
+  let shots = [];
 
-      function persist(){
-        localStorage.setItem(LS_KEY, JSON.stringify(shots));
+  function load() {
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw){ shots = []; return; }
+      const arr = JSON.parse(raw);
+      shots = Array.isArray(arr) ? arr : [];
+    } catch(e){
+      shots = [];
+    }
+  }
+  function save() {
+    localStorage.setItem(LS_KEY, JSON.stringify(shots));
+  }
+
+  const $ = (id) => document.getElementById(id);
+
+  const clubSel = $("clubSel");
+  const distIn  = $("distIn");
+  const guardarBtn = $("guardarBtn");
+  const deshacerBtn = $("deshacerBtn");
+  const borrarSesionBtn = $("borrarSesionBtn");
+  const borrarTodoBtn = $("borrarTodoBtn");
+
+  const dirBtns = [ $("dirIzq"), $("dirCentro"), $("dirDer") ];
+  let dir = "Centro";
+
+  const histWrap = $("histWrap");
+  const totWrap = $("totWrap");
+  const contPill = $("contPill");
+
+  function setDir(newDir){
+    dir = newDir;
+    dirBtns.forEach(b => {
+      const active = (b.dataset.dir === dir);
+      b.classList.toggle("active", active);
+      b.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  const fmtTime = (ts) => {
+    const d = new Date(ts);
+    const hh = String(d.getHours()).padStart(2,"0");
+    const mm = String(d.getMinutes()).padStart(2,"0");
+    return `${hh}:${mm}`;
+  };
+
+  function render() {
+    contPill.textContent = `Tiros sesión: ${shots.length}`;
+
+    if(!shots.length){
+      histWrap.innerHTML = `<div class="empty">Aún no hay tiros en esta sesión.</div>`;
+    } else {
+      const rows = shots.slice().reverse().map((s, idx) => {
+        const n = shots.length - idx;
+        return `<tr>
+          <td class="muted">${n}</td>
+          <td>${s.club}</td>
+          <td class="right">${s.dist}</td>
+          <td class="right">${s.dir}</td>
+          <td class="right muted">${fmtTime(s.ts)}</td>
+        </tr>`;
+      }).join("");
+
+      histWrap.innerHTML = `
+        <table class="table" aria-label="Histórico sesión">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Palo</th>
+              <th class="right">m</th>
+              <th class="right">Dir</th>
+              <th class="right">Hora</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    if(!shots.length){
+      totWrap.innerHTML = `<div class="empty">Sin datos aún.</div>`;
+    } else {
+      const byClub = {};
+      for(const s of shots){
+        if(!byClub[s.club]) byClub[s.club] = {count:0,sum:0,avg:0};
+        byClub[s.club].count++;
+        byClub[s.club].sum += s.dist;
       }
+      const clubs = Object.keys(byClub).sort((a,b) => {
+        if(a==="Driver") return -1;
+        if(b==="Driver") return 1;
+        if(a==="Putter") return 1;
+        if(b==="Putter") return -1;
+        return a.localeCompare(b);
+      });
+      const rows = clubs.map(c => {
+        const o = byClub[c];
+        o.avg = Math.round((o.sum / o.count) * 10) / 10;
+        return `<tr>
+          <td>${c}</td>
+          <td class="right">${o.count}</td>
+          <td class="right">${o.avg}</td>
+        </tr>`;
+      }).join("");
+      totWrap.innerHTML = `
+        <table class="table" aria-label="Totales por palo (sesión)">
+          <thead>
+            <tr>
+              <th>Palo</th>
+              <th class="right">Tiros</th>
+              <th class="right">Prom (m)</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+  }
 
-      function fmtShot(s){
-        return `${s.club} – ${s.dist} m – ${s.dir}`;
-      }
+  function readDistance(){
+    const raw = (distIn.value || "").trim();
+    if(!raw) return null;
+    const n = Number(raw.replace(",", "."));
+    if(!Number.isFinite(n)) return null;
+    const dist = Math.round(n);
+    if(dist <= 0 || dist > 500) return null;
+    return dist;
+  }
 
-      function render(){
-        // último
-        if (shots.length > 0){
-          lastTxt.textContent = "Último: " + fmtShot(shots[shots.length - 1]);
-        } else {
-          lastTxt.textContent = "Último: —";
-        }
+  function toast(msg){
+    alert(msg);
+  }
 
-        // lista (últimos 30)
-        histList.innerHTML = "";
-        const last = shots.slice(-30).reverse();
-        for (const s of last){
-          const li = document.createElement("li");
-          li.textContent = fmtShot(s);
-          histList.appendChild(li);
-        }
-      }
+  function guardar(){
+    const club = (clubSel.value || "").trim();
+    if(!club){ toast("Selecciona un palo."); return; }
 
-      function setDir(dir){
-        currentDir = dir;
-        for (const b of dirButtons){
-          b.classList.toggle("active", b.dataset.dir === dir);
-        }
-      }
+    const dist = readDistance();
+    if(dist === null){ toast("Ingresa una distancia válida (1–500)."); return; }
 
-      function sanitizeDist(v){
-        // solo dígitos, máximo 3-4
-        const clean = String(v || "").replace(/[^\d]/g, "").slice(0, 4);
-        return clean;
-      }
+    const shot = { ts: Date.now(), club, dist, dir };
+    shots.push(shot);
+    save();
+    render();
 
-      function handleSave(){
-        const club = clubSel.value.trim();
-        const dist = sanitizeDist(distInput.value);
+    distIn.value = "";
+    distIn.focus({preventScroll:true});
+  }
 
-        if (!club){
-          alert("Selecciona un palo.");
-          return;
-        }
-        if (!dist || Number(dist) <= 0){
-          alert("Ingresa una distancia válida.");
-          return;
-        }
+  function deshacer(){
+    if(!shots.length){ toast("No hay tiros que deshacer."); return; }
+    shots.pop();
+    save();
+    render();
+  }
 
-        shots.push({
-          club,
-          dist: Number(dist),
-          dir: currentDir,
-          ts: Date.now()
-        });
-        persist();
-        render();
+  function borrarSesion(){
+    if(!shots.length){ toast("La sesión ya está vacía."); return; }
+    const ok = confirm("¿Borrar todos los tiros de esta sesión?");
+    if(!ok) return;
+    shots = [];
+    save();
+    render();
+  }
 
-        // mantener palo y dirección, limpiar solo distancia para velocidad
-        distInput.value = "";
-        distInput.focus({ preventScroll: true });
-      }
+  function borrarTodo(){
+    const ok = confirm("⚠️ ¿Borrar TODO? (sesión y datos guardados)");
+    if(!ok) return;
+    localStorage.removeItem(LS_KEY);
+    shots = [];
+    render();
+  }
 
-      function handleUndo(){
-        if (shots.length === 0){
-          alert("No hay golpes para deshacer.");
-          return;
-        }
-        shots.pop();
-        persist();
-        render();
-      }
+  function bind(){
+    dirBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const d = btn.dataset.dir;
+        if(d) setDir(d);
+      }, {passive:true});
+      btn.addEventListener("pointerup", () => {
+        const d = btn.dataset.dir;
+        if(d) setDir(d);
+      });
+    });
 
-      function handleClearAll(){
-        if (!confirm("¿Borrar TODO el histórico?")){
-          return;
-        }
-        shots = [];
-        persist();
-        render();
-      }
+    guardarBtn.addEventListener("click", guardar);
+    deshacerBtn.addEventListener("click", deshacer);
+    borrarSesionBtn.addEventListener("click", borrarSesion);
+    borrarTodoBtn.addEventListener("click", borrarTodo);
 
-      // --- iOS-safe binding
-      function bindTap(el, fn){
-        // En iOS Safari a veces click se “pierde” con overlays / fast taps.
-        // Usamos pointerdown si existe, si no touchstart + click.
-        const opts = { passive: false };
+    distIn.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){ e.preventDefault(); guardar(); }
+    });
+  }
 
-        const wrapped = (e) => {
-          // importante para iOS: evitar que el evento “muera” por scroll/tap highlight
-          try { e.preventDefault(); } catch {}
-          try { e.stopPropagation(); } catch {}
-          fn();
-        };
+  load();
+  setDir("Centro");
+  bind();
+  render();
+})();
+</script>
 
-        if (window.PointerEvent){
-          el.addEventListener("pointerdown", wrapped, opts);
-        } else {
-          el.addEventListener("touchstart", wrapped, opts);
-          el.addEventListener("click", wrapped, false);
-        }
-      }
-
-      function init(){
-        versionTxt.textContent = APP_VERSION;
-
-        // dirección
-        for (const b of dirButtons){
-          bindTap(b, () => setDir(b.dataset.dir));
-        }
-        setDir("Centro");
-
-        // acciones
-        bindTap(guardarBtn, handleSave);
-        bindTap(deshacerBtn, handleUndo);
-        bindTap(borrarTodoBtn, handleClearAll);
-
-        // input: limpiar caracteres raros
-        distInput.addEventListener("input", () => {
-          const clean = sanitizeDist(distInput.value);
-          if (distInput.value !== clean) distInput.value = clean;
-        }, { passive: true });
-
-        render();
-      }
-
-      if (document.readyState === "loading"){
-        document.addEventListener("DOMContentLoaded", init, { once: true });
-      } else {
-        init();
-      }
-    })();
-  </script>
 </body>
 </html>
