@@ -1,1032 +1,757 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Golf Log</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c3b2e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Golf Log</title>
 
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0f5132">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest?v=B7.20260111.0222">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<style>
-:root{
-  --bg:#061d14;
-  --card:#123a2a;
-  --soft:#1b4d38;
-  --accent:#4ade80;
-  --warn:#facc15;
-  --danger:#ef4444;
-  --text:#e6f4ec;
-  --muted:#b7d6c7;
-  --radius:18px;
-}
-*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;}
-html,body{margin:0;padding:0;background:radial-gradient(circle at top,#0f5132,var(--bg));color:var(--text);overflow-x:hidden;}
-h1{font-size:36px;margin:16px 0;}
-h2{margin:0 0 12px;font-size:20px;}
-.card{background:linear-gradient(180deg,var(--soft),var(--card));border-radius:var(--radius);padding:18px;margin-bottom:18px;}
-.segmented{display:flex;flex-wrap:wrap;gap:10px;}
-.seg-btn{flex:1;min-width:90px;padding:12px;border-radius:14px;border:none;background:#1e5b43;color:var(--text);font-size:17px;}
-.seg-btn.active{background:var(--accent);color:#062317;font-weight:700;}
-input,select{width:100%;padding:14px;font-size:18px;border-radius:14px;border:2px solid #2e7d5b;background:#0d2f22;color:var(--text);}
-.row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;}
-.action{flex:1;padding:14px;font-size:18px;border-radius:14px;border:none;font-weight:700;}
-#guardarBtn{background:var(--accent);color:#062317;}
-#deshacerBtn{background:var(--warn);color:#3a2a00;}
-.pill{display:flex;justify-content:space-between;align-items:center;background:#0d2f22;border-radius:999px;padding:10px 14px;font-size:14px;margin-top:10px;gap:10px;}
-.badge{min-width:80px;padding:8px 12px;border-radius:999px;font-weight:700;text-align:center;display:inline-block;}
-.ok{background:var(--accent);color:#062317;}
-.bad{background:var(--danger);}
-.neutral{background:#64748b;}
-.tableWrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-table{min-width:620px;width:100%;border-collapse:collapse;font-size:14px;}
-th,td{padding:8px;border-bottom:1px solid #1f5b3f;text-align:center;white-space:nowrap;}
-/* Dispersión */
-.dispGrid{display:flex;gap:10px;flex-wrap:wrap;}
-.dispItem{flex:1;min-width:120px;background:#0d2f22;border-radius:14px;padding:12px;}
-.dispItem .k{font-size:12px;color:var(--muted);}
-.dispItem .v{font-size:18px;font-weight:800;margin-top:6px;}
-.barWrap{background:#0d2f22;border-radius:14px;overflow:hidden;height:14px;margin-top:10px;border:1px solid #1f5b3f;}
-.bar{height:100%;display:flex;width:100%;}
-.bar > div{height:100%;}
-.barL{background:var(--danger);}
-.barC{background:var(--accent);}
-.barR{background:var(--danger);opacity:0.75;}
-footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
-</style>
+  <style>
+    :root {
+      --bg:#082c23;
+      --panel:#0c3b2e;
+      --panel2:#0b3429;
+      --text:#eaf7f2;
+      --muted:#b7d9cd;
+      --accent:#22c55e;
+      --accent2:#16a34a;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --chip:#0f4a3a;
+      --field:#1e2327;
+      --field2:#111316;
+      --border: rgba(255,255,255,.10);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 14px;
+    }
+    *{box-sizing:border-box;}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 900px at 50% -100px, rgba(34,197,94,.22), transparent 55%),
+                  radial-gradient(900px 700px at 100% 0, rgba(34,197,94,.10), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    header{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 18px 16px 12px 16px;
+      background: linear-gradient(to bottom, rgba(8,44,35,.96), rgba(8,44,35,.72), rgba(8,44,35,0));
+      backdrop-filter: blur(10px);
+    }
+    .title{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      font-weight: 800;
+      letter-spacing:.2px;
+      font-size: 20px;
+    }
+    .title .emoji{filter: drop-shadow(0 4px 10px rgba(0,0,0,.45));}
+    main{padding: 0 16px 18px 16px; max-width: 720px; margin: 0 auto;}
+    .card{
+      background: linear-gradient(180deg, rgba(12,59,46,.92), rgba(11,52,41,.92));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .grid{display:grid; gap: 12px;}
+    .row{display:flex; gap: 12px; flex-wrap: wrap;}
+    label{display:block; font-size: 13px; color: var(--muted); margin-bottom: 8px;}
+    select,input,textarea{
+      width:100%;
+      background: linear-gradient(180deg, rgba(30,35,39,.98), rgba(17,19,22,.98));
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 14px 14px;
+      font-size: 17px;
+      outline: none;
+    }
+    input::placeholder{color: rgba(234,247,242,.45);}
+    .seg{
+      display:flex;
+      gap: 8px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 6px;
+      flex-wrap: wrap;
+    }
+    .seg button{
+      flex: 1;
+      min-width: 120px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 10px 10px;
+      font-weight: 800;
+      letter-spacing:.2px;
+      cursor: pointer;
+    }
+    .seg button.active{
+      background: rgba(34,197,94,.25);
+      color: var(--text);
+      border-color: rgba(34,197,94,.35);
+    }
+    .dir{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .btn{
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding: 14px 14px;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+    }
+    .btn.primary{background: rgba(34,197,94,.30); border-color: rgba(34,197,94,.35);}
+    .btn.warn{background: rgba(245,158,11,.25); border-color: rgba(245,158,11,.35);}
+    .btn.danger{background: rgba(239,68,68,.20); border-color: rgba(239,68,68,.35);}
+    .btn:active{transform: translateY(1px);}
+    .dir .btn.active{background: rgba(34,197,94,.32); border-color: rgba(34,197,94,.40);}
+    .two{display:grid; grid-template-columns: 1fr 1fr; gap: 12px;}
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size: 13px;
+      color: var(--muted);
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 999px;
+      padding: 8px 10px;
+    }
+    .h2{font-size: 22px; font-weight: 900; margin: 0 0 8px 0;}
+    .list{margin-top: 10px; display:grid; gap: 8px;}
+    .item{
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+    }
+    .item b{font-weight: 900;}
+    .tabs{
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+      background: linear-gradient(to top, rgba(8,44,35,.98), rgba(8,44,35,.70), rgba(8,44,35,0));
+      backdrop-filter: blur(10px);
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) 12px;
+    }
+    .tabs .seg button{min-width: 0; flex: 1;}
+    .hidden{display:none !important;}
+    .small{font-size: 12px; color: rgba(234,247,242,.6);}
+    .kpi{display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;}
+    .kpi .box{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      padding: 12px;
+    }
+    .kpi .n{font-size: 22px; font-weight: 950;}
+    .kpi .t{font-size: 12px; color: rgba(234,247,242,.65); margin-top: 2px;}
+    .note{
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(34,197,94,.12);
+      border: 1px solid rgba(34,197,94,.20);
+      color: rgba(234,247,242,.88);
+    }
+  </style>
 </head>
-
 <body>
-<h1>Golf Log</h1>
+  <header>
+    <div class="title"><span class="emoji">⛳️</span> Golf Log – Práctica</div>
+  </header>
 
-<!-- MODO -->
-<section class="card">
-  <div class="segmented" id="modoButtons">
-    <button class="seg-btn active" data-modo="range">Range</button>
-    <button class="seg-btn" data-modo="zona">Zona</button>
-    <button class="seg-btn" data-modo="evaluacion">Evaluación</button>
-    <button class="seg-btn" data-modo="objetivo">Objetivo</button>
+  <main>
+    <section class="card" id="cardRegistro">
+      <div class="seg" id="modoSeg">
+        <button class="seg-btn active" data-mode="range" type="button">Range</button>
+        <button class="seg-btn" data-mode="zona" type="button">Zona</button>
+        <button class="seg-btn" data-mode="evaluacion" type="button">Evaluación</button>
+        <button class="seg-btn" data-mode="objetivo" type="button">Objetivos</button>
+      </div>
+
+      <div class="grid" style="margin-top:12px;">
+        <div>
+          <label for="clubSel">Palo</label>
+          <select id="clubSel"></select>
+        </div>
+
+        <div id="rowDist">
+          <label for="distInput">Distancia (m)</label>
+          <input id="distInput" inputmode="numeric" placeholder="Ej. 183" />
+        </div>
+
+        <div id="rowZona" class="hidden">
+          <label for="zonaSel">Zona (rango fijo)</label>
+          <select id="zonaSel"></select>
+          <div class="small" id="zonaHint" style="margin-top:6px;"></div>
+        </div>
+
+        <div id="rowObjetivo" class="hidden">
+          <label for="objSel">Objetivo</label>
+          <select id="objSel"></select>
+          <div class="small" id="objHint" style="margin-top:6px;"></div>
+        </div>
+
+        <div>
+          <div class="row" style="align-items:center; justify-content:space-between;">
+            <label style="margin:0;">Dirección</label>
+            <span class="chip" id="jsChip">JS: cargando…</span>
+          </div>
+          <div class="dir" id="dirGrid">
+            <button class="btn dir-btn" data-dir="Izq" type="button">Izq</button>
+            <button class="btn dir-btn active" data-dir="Centro" type="button">Centro</button>
+            <button class="btn dir-btn" data-dir="Der" type="button">Der</button>
+          </div>
+        </div>
+
+        <div class="two">
+          <button class="btn primary" id="guardarBtn" type="button">Guardar golpe</button>
+          <button class="btn warn" id="deshacerBtn" type="button">Deshacer</button>
+        </div>
+
+        <div class="note" id="ultimaNote">Último: —</div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="cardDisp">
+      <div class="h2">Dispersión</div>
+      <div class="small">Conteo por dirección del modo/club actual (y sesión actual).</div>
+      <div class="kpi" id="dispKpi"></div>
+      <div class="small" style="margin-top:10px;">Tip: cambia <b>palo</b> o <b>modo</b> para ver otra dispersión.</div>
+    </section>
+
+    <section class="card hidden" id="cardSesion">
+      <div class="row" style="align-items:baseline; justify-content:space-between;">
+        <div>
+          <div class="h2" style="margin-bottom:0;">Histórico – Sesión</div>
+          <div class="small">Lo que registraste hoy (se borra con “Borrar sesión”).</div>
+        </div>
+        <button class="btn danger" id="borrarSesionBtn" type="button">Borrar sesión</button>
+      </div>
+
+      <div class="list" id="sesionList"></div>
+      <div class="small" id="sesionEmpty" style="margin-top:10px;"></div>
+    </section>
+
+    <section class="card hidden" id="cardTotales">
+      <div class="row" style="align-items:baseline; justify-content:space-between;">
+        <div>
+          <div class="h2" style="margin-bottom:0;">Totales</div>
+          <div class="small">Resumen acumulado por palo (todas las sesiones).</div>
+        </div>
+        <button class="btn danger" id="borrarTodoBtn" type="button">Borrar todo</button>
+      </div>
+
+      <div class="list" id="totalesList"></div>
+      <div class="small" id="totalesEmpty" style="margin-top:10px;"></div>
+    </section>
+
+    <section class="card hidden" id="cardBackup">
+      <div class="h2">Backups</div>
+      <div class="small">Exporta/importa tu base (JSON). Esto guarda y restaura: sesiones, totales y configuración.</div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="exportBtn" type="button">Exportar JSON</button>
+        <button class="btn" id="copiarBtn" type="button">Copiar</button>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label for="backupArea">JSON</label>
+        <textarea id="backupArea" rows="10" placeholder='(Aquí aparecerá el JSON al exportar, o pega uno para importar)'></textarea>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn warn" id="importBtn" type="button">Importar JSON</button>
+      </div>
+
+      <div class="small" style="margin-top:10px;">Versión: <b>B7.20260111.0222</b></div>
+    </section>
+  </main>
+
+  <div class="tabs">
+    <div class="seg" id="tabSeg">
+      <button class="tab-btn active" data-tab="registro" type="button">Registro</button>
+      <button class="tab-btn" data-tab="disp" type="button">Dispersión</button>
+      <button class="tab-btn" data-tab="sesion" type="button">Sesión</button>
+      <button class="tab-btn" data-tab="totales" type="button">Totales</button>
+      <button class="tab-btn" data-tab="backup" type="button">Backups</button>
+    </div>
   </div>
-</section>
-
-<!-- PALO -->
-<section class="card">
-<h2>Palo</h2>
-<div class="segmented" id="paloButtons">
-  <button class="seg-btn active">Driver</button>
-  <button class="seg-btn">H3</button>
-  <button class="seg-btn">H4</button>
-  <button class="seg-btn">5i</button>
-  <button class="seg-btn">6i</button>
-  <button class="seg-btn">7i</button>
-  <button class="seg-btn">8i</button>
-  <button class="seg-btn">9i</button>
-  <button class="seg-btn">PW</button>
-  <button class="seg-btn">SW56</button>
-  <button class="seg-btn">Putter</button>
-</div>
-</section>
-
-<!-- ZONA -->
-<section class="card" id="zonaPanel" style="display:none;">
-<h2>Zona</h2>
-<div class="muted">Rango fijo 0–300 m</div>
-<select id="zonaSelect"></select>
-<div class="pill"><span>Zona:</span><strong id="zonaActual">—</strong></div>
-</section>
-
-<!-- DIRECCIÓN -->
-<section class="card">
-<h2>Dirección</h2>
-<div class="segmented" id="direccionButtons">
-  <button class="seg-btn">Izq</button>
-  <button class="seg-btn active">Centro</button>
-  <button class="seg-btn">Der</button>
-</div>
-</section>
-
-<!-- DISTANCIA -->
-<section class="card">
-<h2>Distancia (m)</h2>
-<input id="distancia" inputmode="numeric" placeholder="Ej. 183">
-<div class="row">
-  <button id="guardarBtn" class="action">Guardar golpe</button>
-  <button id="deshacerBtn" class="action">Deshacer</button>
-</div>
-<div class="pill" id="ultimoInfo">Último: —</div>
-</section>
-
-<!-- HISTORIAL -->
-<section class="card">
-<h2>Historial</h2>
-
-<div class="segmented" id="histViewButtons" style="margin-bottom:10px;">
-  <button class="seg-btn active" data-view="session">Sesión</button>
-  <button class="seg-btn" data-view="total">Totales</button>
-</div>
-
-<div class="row" style="margin-top:0;">
-  <button id="nuevaSesionBtn" class="action" style="background:#60a5fa;color:#081827;">Nueva sesión</button>
-</div>
-
-<div class="pill"><span>Sesión actual:</span><strong id="sesionInfo">—</strong></div>
-
-<div class="tableWrap">
-<table>
-<thead>
-<tr><th>#</th><th>Modo</th><th>Palo</th><th>Dir</th><th>m</th><th>Eval</th></tr>
-</thead>
-<tbody id="history"></tbody>
-</table>
-</div>
-</section>
-
-<!-- DISPERSIÓN -->
-<section class="card">
-<h2>Dispersión (Sesión)</h2>
-<div class="dispGrid">
-  <div class="dispItem">
-    <div class="k">Izq</div>
-    <div class="v" id="dispL">—</div>
-  </div>
-  <div class="dispItem">
-    <div class="k">Centro</div>
-    <div class="v" id="dispC">—</div>
-  </div>
-  <div class="dispItem">
-    <div class="k">Der</div>
-    <div class="v" id="dispR">—</div>
-  </div>
-</div>
-<div class="barWrap" aria-label="barra de dispersión">
-  <div class="bar">
-    <div class="barL" id="barL" style="width:0%"></div>
-    <div class="barC" id="barC" style="width:0%"></div>
-    <div class="barR" id="barR" style="width:0%"></div>
-  </div>
-</div>
-<div class="pill" style="margin-top:10px;">
-  <span>Sesgo (Izq↔Der):</span>
-  <strong id="dispBias">—</strong>
-</div>
-</section>
-
-
-<!-- RESUMEN POR PALO -->
-<section class="card" id="clubStatsCard">
-<h2>Alcances por palo (Totales)</h2>
-<div class="pill" style="margin-top:0;">
-  <span>Base:</span><strong>solo tiros con distancia (range)</strong>
-</div>
-<div class="pill" style="margin-top:10px;">
-  <span>Referencia:</span><strong>tabla fija (min–max)</strong>
-</div>
-
-<div class="row" style="margin-top:10px; display:none;">
-  <button id="editTargetsBtn" class="action" style="background:#a78bfa;color:#160b2a;">Configurar alcances</button>
-</div>
-
-<div id="targetsPanel" class="card" style="display:none; margin-top:12px; padding:14px;">
-  <div class="pill" style="margin-top:0;">
-    <span>Palo</span>
-    <select id="targetClubSelect" style="max-width:180px;"></select>
-  </div>
-  <div class="pill">
-    <span>Alcance ref (m)</span>
-    <input id="targetClubInput" inputmode="numeric" placeholder="Ej. 165" style="max-width:160px;">
-  </div>
-  <div class="row" style="margin-top:10px;">
-    <button id="saveTargetBtn" class="action" style="background:var(--accent);color:#062317;">Guardar alcance</button>
-    <button id="closeTargetsBtn" class="action" style="background:#334155;color:#e2e8f0;">Cerrar</button>
-  </div>
-  <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.3;">
-    Tip: esto es tu “alcance objetivo” por palo (de tu tabla). El resumen mostrará Δ vs promedio.
-  </div>
-</div>
-
-<div class="tableWrap" style="margin-top:12px;">
-<table style="min-width:720px;">
-<thead>
-<tr>
-  <th>Palo</th>
-  <th>n</th>
-  <th>Alcance mínimo</th>
-  <th>Alcance promedio</th>
-  <th>Alcance máximo</th>
-  <th>Alcance por tabla</th>
-  <th>Δ Prom-Tabla(mid)</th>
-</tr>
-</thead>
-<tbody id="clubStatsBody"></tbody>
-</table>
-</div>
-
-</section>
-
-
-<!-- RESPALDO (JSON) -->
-<section class="card" id="backupCard">
-<h2>Respaldo (JSON)</h2>
-<div class="pill" style="margin-top:0;">
-  <span>Tip:</span><strong>Exporta antes de actualizar</strong>
-</div>
-
-<textarea id="backupJson" rows="8" style="width:100%;margin-top:12px;padding:12px;border-radius:14px;border:2px solid #2e7d5b;background:#0d2f22;color:var(--text);font-size:13px;line-height:1.35;"
-  placeholder="Aquí aparecerá tu respaldo (Exportar) o pega aquí un JSON para Importar…"></textarea>
-
-<div class="row" style="margin-top:12px;">
-  <button id="exportBtn" class="action" style="background:#34d399;color:#062317;">Exportar</button>
-  <button id="copyBtn" class="action" style="background:#fbbf24;color:#3a2a00;">Copiar</button>
-</div>
-
-<div class="row" style="margin-top:12px;">
-  <button id="importBtn" class="action" style="background:#60a5fa;color:#081827;">Importar</button>
-  <button id="clearBtn" class="action" style="background:#334155;color:#e2e8f0;">Limpiar</button>
-</div>
-
-<div class="pill" id="backupStatus" style="margin-top:12px;">
-  <span>Estado:</span><strong>—</strong>
-</div>
-
-<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.35;">
-  Importar <strong>sobrescribe</strong> tus datos locales (con confirmación). Si algo sale mal, pega aquí tu JSON y vuelve a importarlo.
-</div>
-</section>
-
-
-
-<section class="card" id="resetCard">
-  <h2>Reset (seguro)</h2>
-  <div class="note" style="margin-bottom:10px">
-    <strong>Tip:</strong> Antes de borrar, exporta tu JSON (Respaldo) y guárdalo en Notas.
-  </div>
-
-  <div class="btnRow" style="grid-template-columns:1fr 1fr; gap:12px">
-    <button id="resetSessionBtn" class="action" style="background:#60a5fa;color:#08182a">Reset sesión</button>
-    <button id="resetAllBtn" class="action" style="background:#ef4444;color:#0b0f0c">Reset todo</button>
-  </div>
-
-  <div class="note" style="margin-top:10px; opacity:.9">
-    <div>• <strong>Reset sesión</strong>: elimina los tiros de la sesión actual y crea una sesión nueva.</div>
-    <div>• <strong>Reset todo</strong>: borra todos tus tiros y configuración guardada (usa primero Respaldo JSON).</div>
-  </div>
-
-  <div class="statusRow" style="margin-top:10px">
-    <span>Estado:</span>
-    <strong id="resetStatus">—</strong>
-  </div>
-</section>
-
-<footer>Golf Log · B6.0 (reset seguro + respaldo JSON iOS) · PWA</footer>
 
 <script>
-/* ===== iOS Safari FIX: asegurar refs por id (no confiar en window.id) ===== */
-(function(){
-  const __ids = ["backupCard", "backupJson", "backupStatus", "barC", "barL", "barR", "clearBtn", "closeTargetsBtn", "clubStatsBody", "clubStatsCard", "copyBtn", "deshacerBtn", "direccionButtons", "dispBias", "dispC", "dispL", "dispR", "distancia", "editTargetsBtn", "exportBtn", "guardarBtn", "histViewButtons", "history", "importBtn", "modoButtons", "nuevaSesionBtn", "paloButtons", "resetAllBtn", "resetCard", "resetSessionBtn", "resetStatus", "saveTargetBtn", "sesionInfo", "targetClubInput", "targetClubSelect", "targetsPanel", "ultimoInfo", "zonaActual", "zonaPanel", "zonaSelect"];
-  for (const id of __ids){
-    const el = document.getElementById(id);
-    if (el) window[id] = el;
-  }
-})();
+(() => {
+  "use strict";
 
-// --- iOS Safari fix: bind DOM refs explicitly (do NOT rely on window[id] globals) ---
-const $ = (id) => document.getElementById(id);
+  const log = (...a) => console.log("[GolfLog]", ...a);
+  window.addEventListener("error", (e) => console.log("[GolfLog][error]", e?.message, e?.filename, e?.lineno));
+  window.addEventListener("unhandledrejection", (e) => console.log("[GolfLog][promise]", e?.reason));
 
-const palo = $('palo');
-const distancia = $('distancia');
-const seg = $('seg');
-const segBtns = $('segBtns');
-const guardarBtn = $('guardarBtn');
-const deshacerBtn = $('deshacerBtn');
-const history = $('history');
+  const $ = (id) => document.getElementById(id);
 
-const modeBtns = $('modeBtns');
-const rangePanel = $('rangePanel');
-const zonaPanel = $('zonaPanel');
-const zonaSelect = $('zonaSelect');
-const zonaInfo = $('zonaInfo');
-const evalPanel = $('evalPanel');
-const objPanel = $('objPanel');
+  const STORAGE_KEY = "golfLogDB_v7";
+  const nowISO = () => new Date().toISOString();
 
-const evalTarget = $('evalTarget');
-const objTarget = $('objTarget');
-
-const barL = $('barL');
-const barC = $('barC');
-const barR = $('barR');
-
-const lastShot = $('lastShot');
-const avgWrap = $('avgWrap');
-const avgVal = $('avgVal');
-const summary = $('summary');
-
-const badgeSW = $('badgeSW');
-const badgeJS = $('badgeJS');
-
-const exportJson = $('exportJson');
-const backupJson = $('backupJson');
-
-const rangeSelect = $('rangeSelect');
-const rangeAddr = $('rangeAddr');
-const rangeDist = $('rangeDist');
-
-const installBtn = $('installBtn');
-
-/* ===== ESTADO / STORAGE ===== */
-const STORAGE="golf-log-data";
-
-function genSessionId(){
-  return "s_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,7);
-}
-function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
-
-let state = (()=>{
-  let s = null;
-  try{ s = JSON.parse(localStorage.getItem(STORAGE)); }catch(e){}
-  if(!s) s = {};
-
-  // Base
-  if(!Array.isArray(s.shots)) s.shots = [];
-  if(!s.modo) s.modo = "range";
-  if(!s.palo) s.palo = "Driver";
-  if(!s.dir) s.dir = "Centro";
-  if(typeof s.zonaKey === "undefined") s.zonaKey = null;
-
-  // Sesiones (nuevo formato)
-  if(!s.session || !s.session.id){
-    s.session = { id: genSessionId(), n: 1 };
-  }
-  if(typeof s.nextSessionNum !== "number") s.nextSessionNum = (s.session?.n || 1) + 1;
-  if(!s.historyView) s.historyView = "session";
-
-  // Alcances de referencia por palo (tabla del usuario). Se pueden configurar en la app.
-  if(!s.clubTargets || typeof s.clubTargets !== "object") s.clubTargets = {};
-
-  // MIGRACIÓN: sessionId en tiros
-  s.shots.forEach(sh=>{
-    if(!sh.sessionId){
-      sh.sessionId = s.session.id;
-    }else if(typeof sh.sessionId !== "string"){
-      sh.sessionId = "legacy_" + String(sh.sessionId);
-    }
-    // asegurar estructura mínima
-    if(!sh.dir) sh.dir = "Centro";
-    if(!sh.palo) sh.palo = "Driver";
-    if(!sh.modo) sh.modo = "range";
+  const defaultDB = () => ({
+    version: "B7.20260111.0222",
+    config: {
+      mode: "range",
+      club: "PW",
+      dir: "Centro",
+      zona: "Z120-140",
+      objetivo: "OBJ_150",
+    },
+    sessionShots: [],
+    allShots: [],
   });
 
-  // Si la sesión actual no tiene tiros pero hay tiros, apuntar a la última sesión existente
-  const hasCurrent = s.shots.some(sh=>sh.sessionId===s.session.id);
-  if(!hasCurrent && s.shots.length){
-    const last = s.shots[s.shots.length-1];
-    s.session.id = last.sessionId;
+  const CLUBS = ["Driver","3W","5W","3H","4H","5I","6I","7I","8I","9I","PW","SW56","LW60","Putter"];
+
+  const ZONES = [
+    ["Z60-80","60–80 m"],
+    ["Z80-100","80–100 m"],
+    ["Z100-120","100–120 m"],
+    ["Z120-140","120–140 m"],
+    ["Z140-160","140–160 m"],
+    ["Z160-180","160–180 m"],
+    ["Z180-200","180–200 m"],
+    ["Z200-220","200–220 m"],
+    ["Z220-240","220–240 m"],
+    ["Z240-260","240–260 m"],
+    ["Z260-280","260–280 m"],
+    ["Z280-300","280–300 m"],
+  ];
+
+  const OBJECTIVES = [
+    ["OBJ_100","Objetivo 100 m"],
+    ["OBJ_120","Objetivo 120 m"],
+    ["OBJ_140","Objetivo 140 m"],
+    ["OBJ_150","Objetivo 150 m"],
+    ["OBJ_160","Objetivo 160 m"],
+    ["OBJ_180","Objetivo 180 m"],
+    ["OBJ_200","Objetivo 200 m"],
+    ["OBJ_220","Objetivo 220 m"],
+  ];
+
+  function loadDB() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultDB();
+      const db = JSON.parse(raw);
+      if (!db || typeof db !== "object") return defaultDB();
+      if (!Array.isArray(db.sessionShots)) db.sessionShots = [];
+      if (!Array.isArray(db.allShots)) db.allShots = [];
+      if (!db.config) db.config = defaultDB().config;
+      return db;
+    } catch (e) {
+      console.log("[GolfLog] loadDB fail", e);
+      return defaultDB();
+    }
   }
 
-  
-  // === ALCANCES FIJOS (PRESET) ===
-  const PRESET_RANGES = {
-    "SW56": {min:0, max:75},
-    "PW":   {min:115, max:135},
-    "9i":   {min:140, max:155},
-    "8i":   {min:145, max:155},
-    "7i":   {min:155, max:165},
-    "6i":   {min:160, max:175},
-    "5i":   {min:185, max:200},
-    "H4":   {min:190, max:215},
-    "H3":   {min:200, max:225}
-  };
-  s.clubRanges = PRESET_RANGES;
-  s.clubTargets = {};
-  Object.keys(PRESET_RANGES).forEach(k=>{
-    const r = PRESET_RANGES[k];
-    s.clubTargets[k] = Math.round((r.min + r.max)/2);
-  });
-
-return s;
-})();
-
-function save(){ localStorage.setItem(STORAGE, JSON.stringify(state)); }
-
-/* ===== RESPALDO JSON ===== */
-function setBackupStatus(msg){
-  const el = document.getElementById("backupStatus");
-  if(!el) return;
-  el.innerHTML = `<span>Estado:</span><strong>${msg}</strong>`;
-}
-
-function snapshotForBackup(){
-  return {
-    __app: "golf-log",
-    __schema: 1,
-    __exportedAt: new Date().toISOString(),
-    state
-  };
-}
-
-function validateAndMigrateBackup(payload){
-  // Acepta: {state:{...}} o estado directo {...}
-  let s = payload;
-  if(payload && typeof payload === "object" && payload.state && typeof payload.state === "object"){
-    s = payload.state;
+  function saveDB() {
+    try {
+      db.version = "B7.20260111.0222";
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    } catch (e) {
+      console.log("[GolfLog] saveDB fail", e);
+      alert("No se pudo guardar (storage).");
+    }
   }
-  if(!s || typeof s !== "object") throw new Error("JSON inválido (no es objeto).");
 
-  // Validaciones mínimas
-  if(!Array.isArray(s.shots)) s.shots = [];
-  if(!s.modo) s.modo = "range";
-  if(!s.palo) s.palo = "Driver";
-  if(!s.dir) s.dir = "Centro";
-  if(typeof s.zonaKey === "undefined") s.zonaKey = null;
-  if(!s.historyView) s.historyView = "session";
+  let db = loadDB();
 
-  // Sesión
-  if(!s.session || !s.session.id){
-    const last = s.shots.length ? s.shots[s.shots.length-1] : null;
-    const sid = (last && last.sessionId) ? String(last.sessionId) : genSessionId();
-    s.session = { id: sid, n: 1 };
+  function fillSelect(sel, items, getVal, getText) {
+    sel.innerHTML = "";
+    for (const it of items) {
+      const opt = document.createElement("option");
+      opt.value = getVal(it);
+      opt.textContent = getText(it);
+      sel.appendChild(opt);
+    }
   }
-  if(typeof s.nextSessionNum !== "number") s.nextSessionNum = (s.session?.n || 1) + 1;
 
-  // Migración sessionId a string
-  s.shots.forEach(sh=>{
-    if(!sh.sessionId){
-      sh.sessionId = s.session.id;
-    }else if(typeof sh.sessionId !== "string"){
-      sh.sessionId = "legacy_" + String(sh.sessionId);
-    }
-    if(!sh.dir) sh.dir = "Centro";
-    if(!sh.palo) sh.palo = "Driver";
-    if(!sh.modo) sh.modo = "range";
-    if(!sh.eval || typeof sh.eval !== "object"){
-      sh.eval = {l:"—",c:"neutral"};
-    }
-  });
+  function setActiveButtons(container, selector, predicate) {
+    container.querySelectorAll(selector).forEach(btn => {
+      btn.classList.toggle("active", predicate(btn));
+    });
+  }
 
-  // Presets del build actual (si están)
-  if(!s.clubRanges && state.clubRanges) s.clubRanges = state.clubRanges;
-  if(!s.clubTargets && state.clubTargets) s.clubTargets = state.clubTargets;
-
-  return s;
-}
-
-function setupBackupUI(){
-  const ta = document.getElementById("backupJson");
-  const exportBtn = document.getElementById("exportBtn");
-  const copyBtn = document.getElementById("copyBtn");
-  const importBtn = document.getElementById("importBtn");
-  const clearBtn = document.getElementById("clearBtn");
-
-  if(!ta || !exportBtn || !copyBtn || !importBtn || !clearBtn) return;
-
-  if(exportBtn) exportBtn.onclick = ()=>{
-    try{
-      const snap = snapshotForBackup();
-      ta.value = JSON.stringify(snap, null, 2);
-      setBackupStatus("Exportado ✅ (copia y guarda este JSON)");
-    }catch(e){
-      setBackupStatus("Error al exportar ❌");
-    }
-  };
-
-  if(copyBtn) copyBtn.onclick = async ()=>{
-    try{
-      if(!ta.value.trim()){
-        setBackupStatus("No hay JSON para copiar");
-        return;
-      }
-      await navigator.clipboard.writeText(ta.value);
-      setBackupStatus("Copiado ✅");
-    }catch(e){
-      setBackupStatus("No se pudo copiar en iPhone ❌");
-    }
-  };
-
-  if(clearBtn) clearBtn.onclick = ()=>{
-    ta.value = "";
-    setBackupStatus("—");
-  };
-
-  if(importBtn) importBtn.onclick = ()=>{
-    try{
-      const raw = ta.value.trim();
-      if(!raw){
-        setBackupStatus("Pega un JSON primero");
-        return;
-      }
-      let payload;
-      try{ payload = JSON.parse(raw); }
-      catch{ throw new Error("JSON mal formado."); }
-
-      const migrated = validateAndMigrateBackup(payload);
-
-      const ok = confirm("IMPORTAR sobrescribirá tus datos locales en este dispositivo. ¿Deseas continuar?");
-      if(!ok){
-        setBackupStatus("Importación cancelada");
-        return;
-      }
-
-      state = migrated;
-      save();
-      render();
-      setBackupStatus("Importado ✅ (datos restaurados)");
-    }catch(e){
-      setBackupStatus("Error: " + (e.message || "Importación fallida"));
-    }
-  };
-}
-
-/* ===== HELPERS UI ⇄ ESTADO ===== */
-function syncPaloFromUI(){
-  const a = document.querySelector("#paloButtons .seg-btn.active");
-  if(a) state.palo = a.textContent.trim();
-}
-function syncDirFromUI(){
-  const a = document.querySelector("#direccionButtons .seg-btn.active");
-  if(a) state.dir = a.textContent.trim();
-}
-function setActiveByText(selector, value){
-  document.querySelectorAll(selector).forEach(btn=>{
-    btn.classList.toggle("active", btn.textContent.trim()===value);
-  });
-}
-
-/* ===== MODO ===== */
-document.querySelectorAll("#modoButtons .seg-btn").forEach(b=>{
-  if(b) b.onclick = ()=>{
-    document.querySelectorAll("#modoButtons .seg-btn").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
-    state.modo=b.dataset.modo;
-    zonaPanel.style.display=state.modo==="zona"?"block":"none";
-    save(); render();
-  };
-});
-
-/* ===== BOTONES GENÉRICOS ===== */
-function group(sel, cb){
-  document.querySelectorAll(sel).forEach(b=>{
-    if(b) b.onclick = ()=>{
-      document.querySelectorAll(sel).forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      cb(b.textContent.trim());
-      save(); // persistir selección también
+  function showTab(tab) {
+    const map = {
+      registro: "cardRegistro",
+      disp: "cardDisp",
+      sesion: "cardSesion",
+      totales: "cardTotales",
+      backup: "cardBackup"
     };
-  });
-}
-group("#paloButtons .seg-btn", v=> state.palo=v);
-group("#direccionButtons .seg-btn", v=> state.dir=v);
+    Object.values(map).forEach(id => $(id).classList.add("hidden"));
+    $(map[tab]).classList.remove("hidden");
+    setActiveButtons($("tabSeg"), ".tab-btn", b => b.dataset.tab === tab);
 
-/* ===== ZONAS FIJAS 0–300 ===== */
-const zonaSelect=document.getElementById("zonaSelect");
-const zonaActual=document.getElementById("zonaActual");
-
-function zonesFixed(step=15,max=300){
-  const z=[]; let n=1;
-  for(let s=0;s<max;s+=step){
-    z.push({key:`Z${n}`,min:s,max:Math.min(max,s+step),label:`Z${n}: ${s}–${Math.min(max,s+step)} m`});
-    n++;
+    if (tab === "disp") renderDispersion();
+    if (tab === "sesion") renderSession();
+    if (tab === "totales") renderTotals();
   }
-  return z;
-}
-function updateZona(){
-  const zs=zonesFixed();
-  zonaSelect.innerHTML = `<option value="">Selecciona zona…</option>` +
-    zs.map(z=>`<option value="${z.key}" ${state.zonaKey===z.key?"selected":""}>${z.label}</option>`).join("");
-  const z = zs.find(x=>x.key===state.zonaKey);
-  zonaActual.textContent = z ? z.label : "—";
-}
-if(zonaSelect) zonaSelect.onchange = e=>{ state.zonaKey=e.target.value||null; save(); render(); };
 
-function evalZona(m){
-  const z = zonesFixed().find(x=>x.key===state.zonaKey);
-  if(!z) return {l:"—",c:"neutral"};
-  if(m<z.min) return {l:"Corto",c:"bad"};
-  if(m>z.max) return {l:"Largo",c:"bad"};
-  return {l:"OK",c:"ok"};
-}
+  function showMode(mode) {
+    db.config.mode = mode;
+    setActiveButtons($("modoSeg"), ".seg-btn", b => b.dataset.mode === mode);
 
-/* ===== EVALUACIÓN ±5% POR PALO (no-Zona) ===== */
-function statsByClub(){
-  // solo tiros con distancia (range), porque Zona se evalúa distinto
-  const map = {};
-  state.shots.filter(sh=>sh.modo!=="zona").forEach(sh=>{
-    const club = sh.palo || "—";
-    if(!map[club]) map[club] = {n:0,sum:0};
-    map[club].n += 1;
-    map[club].sum += Number(sh.m)||0;
-  });
-  return map;
-}
+    const isZona = mode === "zona";
+    const isObj = mode === "objetivo" || mode === "evaluacion";
+    $("rowZona").classList.toggle("hidden", !isZona);
+    $("rowObjetivo").classList.toggle("hidden", !isObj);
 
-function evalClub(m, club){
-  const st = statsByClub()[club] || {n:0,sum:0};
-  // target base: si no hay tiros, usar la propia distancia como target (neutral)
-  const learned = st.n >= 10;
-  const target = learned ? (st.sum / st.n) : (st.n>0 ? (st.sum / st.n) : m);
-  const tol = target * 0.05;
+    renderDispersion();
+    saveDB();
+  }
 
-  let res = {l:"OK",c:"ok"};
-  if(m < target - tol) res = {l:"Corto",c:"bad"};
-  if(m > target + tol) res = {l:"Largo",c:"bad"};
+  function currentTargetDistance() {
+    if (db.config.mode === "zona") {
+      const item = ZONES.find(z => z[0] === db.config.zona);
+      if (!item) return null;
+      const m = item[1].match(/(\d+)\D+(\d+)/);
+      if (!m) return null;
+      return Math.round((Number(m[1]) + Number(m[2])) / 2);
+    }
+    if (db.config.mode === "objetivo" || db.config.mode === "evaluacion") {
+      const item = OBJECTIVES.find(o => o[0] === db.config.objetivo);
+      if (!item) return null;
+      const m = item[1].match(/(\d+)/);
+      return m ? Number(m[1]) : null;
+    }
+    return null;
+  }
 
-  // meta para mostrar en "Último"
-  res.meta = { target, tol, n: st.n, learned };
-  return res;
-}
+  function evaluateShot(dist) {
+    if (db.config.mode !== "evaluacion") return null;
+    const target = currentTargetDistance();
+    if (!target || !Number.isFinite(dist)) return null;
+    const tol = Math.max(5, Math.round(target * 0.05));
+    const ok = Math.abs(dist - target) <= tol;
+    return ok ? "✅ OK" : "❌ Fuera";
+  }
 
-/* ===== HISTORIAL VIEW ===== */
-function setHistView(v){
-  state.historyView = v;
-  document.querySelectorAll("#histViewButtons .seg-btn").forEach(btn=>{
-    btn.classList.toggle("active", btn.dataset.view===v);
-  });
-  save();
-}
+  function normalizeDistance(val) {
+    const s = String(val ?? "").replace(",", ".").trim();
+    if (!s) return null;
+    const n = Number(s);
+    if (!Number.isFinite(n)) return null;
+    if (n <= 0 || n > 500) return null;
+    return Math.round(n);
+  }
 
-document.querySelectorAll("#histViewButtons .seg-btn").forEach(btn=>{
-  if(btn) btn.onclick = ()=>{ setHistView(btn.dataset.view); render(); };
-});
-
-/* ===== SESIONES ===== */
-function nuevaSesion(){
-  syncPaloFromUI();
-  syncDirFromUI();
-  state.session = { id: genSessionId(), n: state.nextSessionNum };
-  state.nextSessionNum += 1;
-  save(); render();
-}
-if(nuevaSesionBtn) nuevaSesionBtn.onclick = nuevaSesion;
-
-/* ===== RESET SEGURO ===== */
-function setResetStatus(msg){
-  const el = document.getElementById("resetStatus");
-  if(el) el.textContent = msg;
-}
-
-function backupLooksValid(){
-  const ta = document.getElementById("backupJson");
-  if(!ta) return false;
-  const t = (ta.value||"").trim();
-  // Señales mínimas
-  return t.startsWith("{") && (t.includes('"__app"') || t.includes('"state"'));
-}
-
-function resetSesionActual(){
-  try{
-    // Confirmación fuerte (sin riesgos)
-    if(!confirm("Reset sesión: eliminará los tiros de la sesión actual. ¿Continuar?")) return;
-    const k = prompt('Escribe "SESION" para confirmar:');
-    if((k||"").trim().toUpperCase() !== "SESION"){
-      setResetStatus("Cancelado");
+  function renderLast() {
+    const last = db.sessionShots[db.sessionShots.length - 1];
+    if (!last) {
+      $("ultimaNote").textContent = "Último: —";
       return;
     }
-
-    const currentId = state.session?.id;
-    if(currentId){
-      state.shots = (state.shots||[]).filter(sh => sh.sessionId !== currentId);
-    }
-    // Crear sesión nueva (mantiene totales del resto)
-    nuevaSesion();
-    setResetStatus("Sesión reseteada ✅");
-  }catch(e){
-    setResetStatus("Error al resetear sesión ❌");
+    const extra = last.eval ? ` · ${last.eval}` : "";
+    $("ultimaNote").textContent = `Último: ${last.club} · ${last.dist} m · ${last.dir}${extra}`;
   }
-}
 
-function resetTodo(){
-  try{
-    if(!confirm("Reset TODO: borrará todos tus tiros y datos locales. ¿Continuar?")) return;
-
-    // Pedimos respaldo primero (recomendado, pero no obligatorio)
-    if(!backupLooksValid()){
-      const ok = confirm("No detecto un JSON exportado en el cuadro. ¿Seguro que quieres continuar SIN respaldo?");
-      if(!ok) { setResetStatus("Cancelado"); return; }
-    }
-
-    const k = prompt('Escribe "BORRAR TODO" para confirmar:');
-    if((k||"").trim().toUpperCase() !== "BORRAR TODO"){
-      setResetStatus("Cancelado");
+  function renderSession() {
+    const list = $("sesionList");
+    list.innerHTML = "";
+    if (!db.sessionShots.length) {
+      $("sesionEmpty").textContent = "Sin tiros aún.";
       return;
     }
-
-    localStorage.removeItem(STORAGE);
-    setResetStatus("Borrado total ✅ (recargando...)");
-    // Recargar para re-inicializar estado limpio
-    setTimeout(()=>location.reload(), 400);
-  }catch(e){
-    setResetStatus("Error al resetear todo ❌");
+    $("sesionEmpty").textContent = "";
+    [...db.sessionShots].slice().reverse().forEach(shot => {
+      const div = document.createElement("div");
+      div.className = "item";
+      const left = document.createElement("div");
+      left.innerHTML = `<b>${shot.club}</b> · ${shot.dist} m · ${shot.dir}` + (shot.eval ? ` · ${shot.eval}` : "");
+      const right = document.createElement("div");
+      right.className = "small";
+      right.textContent = new Date(shot.ts).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+      div.appendChild(left);
+      div.appendChild(right);
+      list.appendChild(div);
+    });
   }
-}
 
-const resetSessionBtn = document.getElementById("resetSessionBtn");
-const resetAllBtn = document.getElementById("resetAllBtn");
-if(resetSessionBtn) resetSessionBtn.onclick = resetSesionActual;
-if(resetAllBtn) resetAllBtn.onclick = resetTodo;
-
-
-/* ===== GUARDAR / DESHACER ===== */
-if(guardarBtn) guardarBtn.onclick = ()=>{
-  syncPaloFromUI();
-  syncDirFromUI();
-
-  const m = Number(distancia.value);
-  if(!m || m<=0) return;
-
-  const e = (state.modo==="zona")
-    ? evalZona(m)
-    : evalClub(m, state.palo);
-
-  state.shots.push({
-    modo: state.modo,
-    palo: state.palo,
-    dir: state.dir,
-    m,
-    eval: e,
-    sessionId: state.session.id,
-    t: Date.now()
-  });
-
-  distancia.value="";
-  save(); render();
-};
-
-if(deshacerBtn) deshacerBtn.onclick = ()=>{
-  for(let i=state.shots.length-1;i>=0;i--){
-    if(state.shots[i].sessionId===state.session.id){
-      state.shots.splice(i,1);
-      break;
+  function renderTotals() {
+    const list = $("totalesList");
+    list.innerHTML = "";
+    const byClub = new Map();
+    for (const s of db.allShots) {
+      const key = s.club;
+      if (!byClub.has(key)) byClub.set(key, []);
+      byClub.get(key).push(s);
+    }
+    const keys = CLUBS.filter(c => byClub.has(c));
+    if (!keys.length) {
+      $("totalesEmpty").textContent = "Aún no hay datos acumulados.";
+      return;
+    }
+    $("totalesEmpty").textContent = "";
+    for (const club of keys) {
+      const arr = byClub.get(club);
+      const dists = arr.map(s=>s.dist);
+      const avg = Math.round(dists.reduce((a,b)=>a+b,0)/dists.length);
+      const min = Math.min(...dists);
+      const max = Math.max(...dists);
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `<div><b>${club}</b> · ${arr.length} tiros</div><div class="small">Prom ${avg} · Min ${min} · Max ${max}</div>`;
+      list.appendChild(div);
     }
   }
-  save(); render();
-};
 
-/* ===== DISPERSIÓN POR SESIÓN ===== */
-function renderDispersion(sessionShots){
-  const total = sessionShots.length;
-  const counts = {Izq:0, Centro:0, Der:0};
-  sessionShots.forEach(sh=>{
-    const d = (sh.dir||"Centro").trim();
-    if(d==="Izq") counts.Izq++;
-    else if(d==="Der") counts.Der++;
-    else counts.Centro++;
-  });
+  function renderDispersion() {
+    const club = db.config.club;
+    const mode = db.config.mode;
+    const shots = db.sessionShots.filter(s => s.club === club && s.mode === mode);
+    const counts = {Izq:0, Centro:0, Der:0};
+    for (const s of shots) counts[s.dir] = (counts[s.dir]||0)+1;
+    const total = shots.length || 0;
 
-  function fmt(k){
-    if(!total) return "—";
-    const pct = Math.round((counts[k]/total)*100);
-    return `${pct}% (${counts[k]})`;
+    const kpi = $("dispKpi");
+    kpi.innerHTML = "";
+    for (const d of ["Izq","Centro","Der"]) {
+      const box = document.createElement("div");
+      box.className = "box";
+      const pct = total ? Math.round((counts[d]/total)*100) : 0;
+      box.innerHTML = `<div class="n">${counts[d]}</div><div class="t">${d} · ${pct}%</div>`;
+      kpi.appendChild(box);
+    }
   }
 
-  dispL.textContent = fmt("Izq");
-  dispC.textContent = fmt("Centro");
-  dispR.textContent = fmt("Der");
+  function renderHints() {
+    const z = ZONES.find(x => x[0] === db.config.zona);
+    $("zonaHint").textContent = z ? `Rango fijo: ${z[1]}` : "";
 
-  const wL = total ? (counts.Izq/total)*100 : 0;
-  const wC = total ? (counts.Centro/total)*100 : 0;
-  const wR = total ? (counts.Der/total)*100 : 0;
-
-  barL.style.width = wL.toFixed(1) + "%";
-  barC.style.width = wC.toFixed(1) + "%";
-  barR.style.width = wR.toFixed(1) + "%";
-
-  // Sesgo: -1 Izq, 0 Centro, +1 Der (promedio)
-  if(!total){
-    dispBias.textContent = "—";
-  }else{
-    const score = (counts.Der - counts.Izq) / total; // -1..+1
-    const pct = Math.round(Math.abs(score)*100);
-    if(score > 0.05) dispBias.textContent = `Hacia Der (+${pct}%)`;
-    else if(score < -0.05) dispBias.textContent = `Hacia Izq (-${pct}%)`;
-    else dispBias.textContent = "Neutral";
-  }
-}
-
-
-/* ===== RESUMEN POR PALO (TOTALES) ===== */
-function clubOrder(){
-  // orden fijo para tabla
-  return ["Driver","H3","H4","5i","6i","7i","8i","9i","PW","SW56","Putter"];
-}
-
-/* ===== RESUMEN POR PALO (TOTALES) ===== */
-function computeClubStatsTotal(){
-  // Alcances: solo tiros con distancia (modo range) para que sea consistente y comparable
-  const map = new Map();
-  const shots = (state.shots || []).filter(sh => {
-    const modo = String(sh?.modo ?? '').trim().toLowerCase();
-    const m = Number(sh?.m);
-    if (!Number.isFinite(m) || m <= 0) return false;
-
-    // Normalizamos para soportar datos viejos o variantes
-    return (modo === 'range' || modo === 'no-zona' || modo === 'nozona' || modo === 'practice' || modo === '');
-  });
-
-  for(const sh of shots){
-    const club = String(sh?.palo ?? '—').trim() || '—';
-    const m = Number(sh.m);
-
-    if(!map.has(club)) map.set(club, {n:0, min:m, max:m, sum:0});
-    const st = map.get(club);
-
-    st.n += 1;
-    st.sum += m;
-    if(m < st.min) st.min = m;
-    if(m > st.max) st.max = m;
+    const o = OBJECTIVES.find(x => x[0] === db.config.objetivo);
+    const mode = db.config.mode;
+    if (mode === "objetivo") $("objHint").textContent = o ? `Meta: ${o[1]}` : "";
+    else if (mode === "evaluacion") {
+      const t = currentTargetDistance();
+      const tol = t ? Math.max(5, Math.round(t*0.05)) : null;
+      $("objHint").textContent = (o && tol) ? `Objetivo: ${o[1]} (tolerancia ±${tol} m)` : "";
+    } else {
+      $("objHint").textContent = o ? o[1] : "";
+    }
   }
 
-  return map; // ✅ IMPORTANTE: regresamos el Map, no un array
-}
-
-function renderClubStats(){
-  const body = document.getElementById("clubStatsBody");
-  if(!body) return;
-
-  const statsMap = computeClubStatsTotal();
-  const targets = state.clubTargets || {};
-
-  // construir lista de clubes: primero orden conocido, luego cualquier extra
-  const ordered = clubOrder();
-  const extras = [...statsMap.keys()].filter(k=>!ordered.includes(k)).sort();
-  const clubs = [...ordered, ...extras].filter(c=>statsMap.has(c));
-
-  body.innerHTML = "";
-  if(!clubs.length){
-    body.innerHTML = `<tr><td colspan="7" style="text-align:left;color:var(--muted);padding:10px;">
-      Aún no hay tiros con distancia (range) para calcular stats por palo.
-    </td></tr>`;
-    return;
+  function setClub(club) {
+    db.config.club = club;
+    saveDB();
+    renderDispersion();
   }
 
-  for(const club of clubs){
-    const st0 = statsMap.get(club);
-    const st = {
-      n: st0.n,
-      min: Math.round(st0.min),
-      avg: Math.round(st0.sum / st0.n),
-      max: Math.round(st0.max)
+  function setDir(dir) {
+    db.config.dir = dir;
+    setActiveButtons($("dirGrid"), ".dir-btn", b => b.dataset.dir === dir);
+    saveDB();
+  }
+
+  function saveShot() {
+    const club = db.config.club;
+    const dir = db.config.dir;
+    const mode = db.config.mode;
+    const dist = normalizeDistance($("distInput").value);
+    if (!club) return alert("Selecciona un palo.");
+    if (!dist) return alert("Ingresa una distancia válida (1–500).");
+
+    const shot = {
+      ts: nowISO(),
+      club,
+      dist,
+      dir,
+      mode,
+      zona: db.config.zona,
+      objetivo: db.config.objetivo,
+      eval: evaluateShot(dist),
     };
 
-    const r = ranges[club] || null;
-    const ref = (targets && (targets[club]===0 || targets[club])) ? Number(targets[club]) : null; // midpoint fijo
-    const delta = (ref!==null && Number.isFinite(ref)) ? (st.avg - ref) : null;
+    db.sessionShots.push(shot);
+    db.allShots.push(shot);
+    saveDB();
 
-    const fmt = (x)=> Number.isFinite(x) ? Math.round(x) : "—";
-    const fmtDelta = (d)=>{
-      if(!Number.isFinite(d)) return "—";
-      const s = Math.round(d);
-      return (s>0?`+${s}`:`${s}`);
-    };
-
-    body.innerHTML += `<tr>
-      <td>${club}</td>
-      <td>${st.n}</td>
-      <td>${fmt(st.min)}</td>
-      <td>${fmt(st.avg)}</td>
-      <td>${fmt(st.max)}</td>
-      <td>${r ? `${r.min}–${r.max}` : "—"}</td>
-      <td>${delta!==null ? fmtDelta(delta) : "—"}</td>
-    </tr>`;
-  }
-}
-
-
-  for(const club of clubs){
-    const st = map.get(club);
-    const r = ranges[club] || null;
-    const ref = (targets && (targets[club]===0 || targets[club])) ? Number(targets[club]) : null; // midpoint fijo
-    const delta = (ref!==null && Number.isFinite(ref)) ? (st.avg - ref) : null;
-
-    const fmt = (x)=> Number.isFinite(x) ? Math.round(x) : "—";
-    const fmtDelta = (d)=>{
-      if(!Number.isFinite(d)) return "—";
-      const s = Math.round(d);
-      return (s>0?`+${s}`:`${s}`);
-    };
-
-    body.innerHTML += `<tr>
-      <td>${club}</td>
-      <td>${st.n}</td>
-      <td>${fmt(st.min)}</td>
-      <td>${fmt(st.avg)}</td>
-      <td>${fmt(st.max)}</td>
-      <td>${r ? `${r.min}–${r.max}` : "—"}</td>
-      <td>${delta!==null ? fmtDelta(delta) : "—"}</td>
-    </tr>`;
-  }
-}
-
-/* ===== CONFIGURAR ALCANCES (REF) ===== */
-function toggleTargetsPanel(show){
-  const p = document.getElementById("targetsPanel");
-  if(!p) return;
-  p.style.display = show ? "block" : "none";
-}
-
-function initTargetsUI(){
-  const btn = document.getElementById("editTargetsBtn");
-  const close = document.getElementById("closeTargetsBtn");
-  const saveBtn = document.getElementById("saveTargetBtn");
-  const sel = document.getElementById("targetClubSelect");
-  const inp = document.getElementById("targetClubInput");
-
-  if(!btn || !close || !saveBtn || !sel || !inp) return;
-
-  // llenar selector
-  const clubs = clubOrder();
-  sel.innerHTML = clubs.map(c=>`<option value="${c}">${c}</option>`).join("");
-
-  function loadSelected(){
-    const c = sel.value;
-    const v = (state.clubTargets||{})[c];
-    inp.value = (v===0 || v) ? String(v) : "";
+    $("distInput").value = "";
+    renderLast();
+    renderDispersion();
+    if (!$("cardSesion").classList.contains("hidden")) renderSession();
+    if (!$("cardTotales").classList.contains("hidden")) renderTotals();
   }
 
-  if(btn) btn.onclick = ()=>{ toggleTargetsPanel(true); loadSelected(); };
-  if(close) close.onclick = ()=>{ toggleTargetsPanel(false); };
-  if(sel) sel.onchange = loadSelected;
-
-  if(saveBtn) saveBtn.onclick = ()=>{
-    const c = sel.value;
-    const raw = inp.value.trim();
-    if(!state.clubTargets || typeof state.clubTargets!=="object") state.clubTargets = {};
-    if(raw===""){
-      delete state.clubTargets[c];
-    }else{
-      const v = Number(raw);
-      if(Number.isFinite(v) && v>0){
-        state.clubTargets[c] = Math.round(v);
+  function undoLast() {
+    const last = db.sessionShots.pop();
+    if (!last) return;
+    for (let i = db.allShots.length - 1; i >= 0; i--) {
+      const s = db.allShots[i];
+      if (s.ts === last.ts && s.club === last.club && s.dist === last.dist && s.dir === last.dir) {
+        db.allShots.splice(i, 1);
+        break;
       }
     }
-    save();
-    renderClubStats();
-  };
-}
-
-/* ===== RENDER ===== */
-function render(){
-  // panels
-  zonaPanel.style.display = state.modo==="zona" ? "block" : "none";
-
-  // sincronizar botones activos desde estado (por recargas)
-  document.querySelectorAll("#modoButtons .seg-btn").forEach(btn=>{
-    btn.classList.toggle("active", btn.dataset.modo===state.modo);
-  });
-  setActiveByText("#paloButtons .seg-btn", state.palo);
-  setActiveByText("#direccionButtons .seg-btn", state.dir);
-
-  // Zona UI
-  updateZona();
-
-  // Sesión label
-  sesionInfo.textContent = `S${state.session?.n || 1}`;
-
-  // Tabla: sesión o totales
-  const shotsView = (state.historyView==="total")
-    ? state.shots
-    : state.shots.filter(sh=>sh.sessionId===state.session.id);
-
-  const h = document.getElementById("history");
-  h.innerHTML = "";
-  shotsView.slice().reverse().forEach((s,i)=>{
-    h.innerHTML += `<tr>
-      <td>${shotsView.length-i}</td>
-      <td>${s.modo}</td>
-      <td>${s.palo}</td>
-      <td>${s.dir}</td>
-      <td>${s.m}</td>
-      <td><span class="badge ${s.eval?.c || "neutral"}">${s.eval?.l || "—"}</span></td>
-    </tr>`;
-  });
-
-  // Último (de la sesión actual)
-  const lastSessionShot = [...state.shots].reverse().find(sh=>sh.sessionId===state.session.id);
-  if(lastSessionShot){
-    const u = lastSessionShot;
-    const meta = (u.eval && u.eval.meta)
-      ? ` <span style="color:var(--muted);">(target=${Math.round(u.eval.meta.target)} · n=${u.eval.meta.n}${u.eval.meta.learned?" ✓":""})</span>`
-      : "";
-    ultimoInfo.innerHTML = `Último: ${u.m} m → <span class="badge ${u.eval?.c || "neutral"}">${u.eval?.l || "—"}</span>${meta}`;
-  }else{
-    ultimoInfo.textContent = "Último: —";
+    saveDB();
+    renderLast();
+    renderDispersion();
+    if (!$("cardSesion").classList.contains("hidden")) renderSession();
+    if (!$("cardTotales").classList.contains("hidden")) renderTotals();
   }
 
-  // Dispersión SIEMPRE por sesión actual
-  const sessionShots = state.shots.filter(sh=>sh.sessionId===state.session.id);
-  renderDispersion(sessionShots);
-  // Resumen por palo (Totales)
-  renderClubStats();
-}
-render();
-setupBackupUI();
-initTargetsUI();
-renderClubStats();
+  function clearSession() {
+    if (!confirm("¿Borrar la sesión actual?")) return;
+    const toRemove = new Set(db.sessionShots.map(s => s.ts + "|" + s.club + "|" + s.dist + "|" + s.dir));
+    db.allShots = db.allShots.filter(s => !toRemove.has(s.ts + "|" + s.club + "|" + s.dist + "|" + s.dir));
+    db.sessionShots = [];
+    saveDB();
+    renderLast();
+    renderDispersion();
+    renderSession();
+    renderTotals();
+  }
 
-// Service Worker (Safari-safe)
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js");
-  });
-}</script>
+  function clearAll() {
+    if (!confirm("¿Borrar TODO (sesiones y totales)?")) return;
+    db = defaultDB();
+    saveDB();
+    $("distInput").value = "";
+    $("backupArea").value = "";
+    initUIFromDB();
+    renderLast();
+    renderDispersion();
+    renderSession();
+    renderTotals();
+  }
+
+  function exportJSON() {
+    $("backupArea").value = JSON.stringify(db, null, 2);
+  }
+
+  function copyJSON() {
+    const t = $("backupArea").value.trim();
+    if (!t) return alert("No hay JSON para copiar.");
+    navigator.clipboard?.writeText(t).then(() => alert("Copiado ✅")).catch(() => alert("No se pudo copiar."));
+  }
+
+  function importJSON() {
+    const raw = $("backupArea").value.trim();
+    if (!raw) return alert("Pega un JSON primero.");
+    try {
+      const obj = JSON.parse(raw);
+      if (!obj || typeof obj !== "object") throw new Error("JSON inválido");
+      if (!Array.isArray(obj.sessionShots) || !Array.isArray(obj.allShots)) throw new Error("Formato inválido");
+      if (!obj.config) throw new Error("Formato inválido");
+      db = obj;
+      saveDB();
+      initUIFromDB();
+      renderLast();
+      renderDispersion();
+      renderSession();
+      renderTotals();
+      alert("Importado ✅");
+    } catch (e) {
+      console.log("[GolfLog] import fail", e);
+      alert("No se pudo importar. Revisa el formato.");
+    }
+  }
+
+  // iOS Safari reliable binding: delegation + pointerup/touchend/click
+  function onTap(selector, handler) {
+    const tap = (e) => {
+      const el = e.target?.closest?.(selector);
+      if (!el) return;
+      e.preventDefault();
+      handler(el, e);
+    };
+    document.addEventListener("pointerup", tap, true);
+    document.addEventListener("touchend", tap, true);
+    document.addEventListener("click", tap, true);
+  }
+
+  function initUIFromDB() {
+    fillSelect($("clubSel"), CLUBS, x=>x, x=>x);
+    $("clubSel").value = db.config.club || "PW";
+
+    fillSelect($("zonaSel"), ZONES, z=>z[0], z=>z[1]);
+    $("zonaSel").value = db.config.zona || ZONES[3][0];
+
+    fillSelect($("objSel"), OBJECTIVES, o=>o[0], o=>o[1]);
+    $("objSel").value = db.config.objetivo || OBJECTIVES[3][0];
+
+    showMode(db.config.mode || "range");
+    setDir(db.config.dir || "Centro");
+    renderHints();
+    renderLast();
+    $("jsChip").textContent = "JS: activo ✓";
+  }
+
+  function bindEvents() {
+    onTap(".tab-btn", (btn) => showTab(btn.dataset.tab));
+    onTap("#modoSeg .seg-btn", (btn) => { showMode(btn.dataset.mode); renderHints(); });
+    onTap("#dirGrid .dir-btn", (btn) => setDir(btn.dataset.dir));
+    onTap("#guardarBtn", () => saveShot());
+    onTap("#deshacerBtn", () => undoLast());
+    onTap("#borrarSesionBtn", () => clearSession());
+    onTap("#borrarTodoBtn", () => clearAll());
+    onTap("#exportBtn", () => exportJSON());
+    onTap("#copiarBtn", () => copyJSON());
+    onTap("#importBtn", () => importJSON());
+
+    $("clubSel").addEventListener("change", (e) => { setClub(e.target.value); renderHints(); });
+    $("zonaSel").addEventListener("change", (e) => { db.config.zona = e.target.value; saveDB(); renderHints(); renderDispersion(); });
+    $("objSel").addEventListener("change", (e) => { db.config.objetivo = e.target.value; saveDB(); renderHints(); renderDispersion(); });
+
+    $("distInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); saveShot(); }
+    });
+  }
+
+  async function registerSW() {
+    try {
+      if (!("serviceWorker" in navigator)) return;
+      const reg = await navigator.serviceWorker.register("sw.js?v=B7.20260111.0222");
+      log("SW registered", reg.scope);
+    } catch (e) {
+      console.log("[GolfLog] SW register fail", e);
+    }
+  }
+
+  try {
+    initUIFromDB();
+    bindEvents();
+    showTab("registro");
+    registerSW();
+    log("ready", "B7.20260111.0222");
+  } catch (e) {
+    console.log("[GolfLog] boot fail", e);
+    alert("Error al iniciar. Revisa consola.");
+  }
+})();
+</script>
 </body>
 </html>
