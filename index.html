@@ -471,7 +471,7 @@ function setupBackupUI(){
 
   if(!ta || !exportBtn || !copyBtn || !importBtn || !clearBtn) return;
 
-  exportBtn.onclick = ()=>{
+  if(exportBtn) exportBtn.onclick = ()=>{
     try{
       const snap = snapshotForBackup();
       ta.value = JSON.stringify(snap, null, 2);
@@ -481,7 +481,7 @@ function setupBackupUI(){
     }
   };
 
-  copyBtn.onclick = async ()=>{
+  if(copyBtn) copyBtn.onclick = async ()=>{
     try{
       if(!ta.value.trim()){
         setBackupStatus("No hay JSON para copiar");
@@ -494,12 +494,12 @@ function setupBackupUI(){
     }
   };
 
-  clearBtn.onclick = ()=>{
+  if(clearBtn) clearBtn.onclick = ()=>{
     ta.value = "";
     setBackupStatus("—");
   };
 
-  importBtn.onclick = ()=>{
+  if(importBtn) importBtn.onclick = ()=>{
     try{
       const raw = ta.value.trim();
       if(!raw){
@@ -545,7 +545,7 @@ function setActiveByText(selector, value){
 
 /* ===== MODO ===== */
 document.querySelectorAll("#modoButtons .seg-btn").forEach(b=>{
-  b.onclick=()=>{
+  if(b) b.onclick = ()=>{
     document.querySelectorAll("#modoButtons .seg-btn").forEach(x=>x.classList.remove("active"));
     b.classList.add("active");
     state.modo=b.dataset.modo;
@@ -557,7 +557,7 @@ document.querySelectorAll("#modoButtons .seg-btn").forEach(b=>{
 /* ===== BOTONES GENÉRICOS ===== */
 function group(sel, cb){
   document.querySelectorAll(sel).forEach(b=>{
-    b.onclick=()=>{
+    if(b) b.onclick = ()=>{
       document.querySelectorAll(sel).forEach(x=>x.classList.remove("active"));
       b.classList.add("active");
       cb(b.textContent.trim());
@@ -587,7 +587,7 @@ function updateZona(){
   const z = zs.find(x=>x.key===state.zonaKey);
   zonaActual.textContent = z ? z.label : "—";
 }
-zonaSelect.onchange=e=>{ state.zonaKey=e.target.value||null; save(); render(); };
+if(zonaSelect) zonaSelect.onchange = e=>{ state.zonaKey=e.target.value||null; save(); render(); };
 
 function evalZona(m){
   const z = zonesFixed().find(x=>x.key===state.zonaKey);
@@ -636,7 +636,7 @@ function setHistView(v){
 }
 
 document.querySelectorAll("#histViewButtons .seg-btn").forEach(btn=>{
-  btn.onclick=()=>{ setHistView(btn.dataset.view); render(); };
+  if(btn) btn.onclick = ()=>{ setHistView(btn.dataset.view); render(); };
 });
 
 /* ===== SESIONES ===== */
@@ -647,7 +647,7 @@ function nuevaSesion(){
   state.nextSessionNum += 1;
   save(); render();
 }
-nuevaSesionBtn.onclick = nuevaSesion;
+if(nuevaSesionBtn) nuevaSesionBtn.onclick = nuevaSesion;
 
 /* ===== RESET SEGURO ===== */
 function setResetStatus(msg){
@@ -717,7 +717,7 @@ if(resetAllBtn) resetAllBtn.onclick = resetTodo;
 
 
 /* ===== GUARDAR / DESHACER ===== */
-guardarBtn.onclick=()=>{
+if(guardarBtn) guardarBtn.onclick = ()=>{
   syncPaloFromUI();
   syncDirFromUI();
 
@@ -742,7 +742,7 @@ guardarBtn.onclick=()=>{
   save(); render();
 };
 
-deshacerBtn.onclick=()=>{
+if(deshacerBtn) deshacerBtn.onclick = ()=>{
   for(let i=state.shots.length-1;i>=0;i--){
     if(state.shots[i].sessionId===state.session.id){
       state.shots.splice(i,1);
@@ -933,11 +933,11 @@ function initTargetsUI(){
     inp.value = (v===0 || v) ? String(v) : "";
   }
 
-  btn.onclick = ()=>{ toggleTargetsPanel(true); loadSelected(); };
-  close.onclick = ()=>{ toggleTargetsPanel(false); };
-  sel.onchange = loadSelected;
+  if(btn) btn.onclick = ()=>{ toggleTargetsPanel(true); loadSelected(); };
+  if(close) close.onclick = ()=>{ toggleTargetsPanel(false); };
+  if(sel) sel.onchange = loadSelected;
 
-  saveBtn.onclick = ()=>{
+  if(saveBtn) saveBtn.onclick = ()=>{
     const c = sel.value;
     const raw = inp.value.trim();
     if(!state.clubTargets || typeof state.clubTargets!=="object") state.clubTargets = {};
@@ -1018,7 +1018,6 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js");
   });
-}
-</script>
+}</script>
 </body>
 </html>

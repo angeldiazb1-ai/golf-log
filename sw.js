@@ -5,7 +5,7 @@
 */
 'use strict';
 
-const VERSION = 'B6.2-stable-refsfix';
+const VERSION = "B6.2-stable-refsfix2";
 const CACHE_PREFIX = 'golf-log';
 const CACHE_NAME = `${CACHE_PREFIX}-${VERSION}`;
 
