@@ -3,270 +3,423 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b2f26" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0b3a2e" />
   <title>Golf Log – Práctica</title>
-
-  <link rel="manifest" href="manifest.webmanifest?v=7000">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=7000">
-  <link rel="icon" href="icons/icon-192.png?v=7000">
 
   <style>
     :root{
-      --bg:#07271f;
-      --panel:#0b3329;
-      --text:#eaf7f3;
-      --muted:#b7d7cd;
-      --accent:#1fa16b;
-      --accent2:#c6a11a;
-      --btn:#1fa16b;
-      --btnText:#052218;
-      --shadow: 0 10px 22px rgba(0,0,0,.28);
+      --bg:#073228;
+      --panel:#0b3a2e;
+      --card:#0d4637;
+      --text:#e9fff6;
+      --muted:#b9e7d6;
+      --btn:#1c9a62;
+      --btn2:#15794d;
+      --warn:#b38b00;
+      --danger:#d9534f;
+      --shadow: 0 10px 30px rgba(0,0,0,.25);
       --radius: 22px;
     }
-    *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
-    html,body{height:100%;}
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 700px at 50% -200px, #0f4a3b 0%, var(--bg) 55%, #041b15 100%);
-      color: var(--text);
-      padding: 18px 14px 28px;
+      background: radial-gradient(1200px 800px at 50% -150px, rgba(255,255,255,.12), transparent 60%),
+                  linear-gradient(180deg, #063025, #062a22);
+      color:var(--text);
+      font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom) 14px;
     }
     header{
-      text-align:center;
-      padding: 10px 8px 16px;
-      color: var(--text);
-      font-weight: 800;
-      font-size: 26px;
-      letter-spacing:.2px;
+      display:flex; align-items:center; justify-content:center;
+      padding: 18px 0 14px;
+      position: sticky;
+      top: 0;
+      background: linear-gradient(180deg, rgba(6,42,34,.92), rgba(6,42,34,.65));
+      backdrop-filter: blur(8px);
+      z-index: 10;
     }
-    header .sub{display:block; font-size:12px; color: var(--muted); font-weight:600; margin-top:6px}
-    .wrap{max-width:520px; margin:0 auto;}
+    header h1{
+      margin:0;
+      font-size: 22px;
+      letter-spacing:.2px;
+      font-weight: 800;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    header .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: #43e29f;
+      box-shadow: 0 0 0 6px rgba(67,226,159,.12);
+    }
+
+    .wrap{max-width: 520px; margin: 0 auto;}
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,.02) 100%), var(--panel);
+      background: rgba(13,70,55,.92);
       border: 1px solid rgba(255,255,255,.08);
       border-radius: var(--radius);
       padding: 16px;
       box-shadow: var(--shadow);
-      margin-bottom: 14px;
+      margin: 14px 0;
     }
+
     label{
       display:block;
+      font-size: 14px;
+      color: var(--muted);
+      margin: 10px 0 8px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    select, input{
+      width:100%;
+      height:56px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      padding: 0 14px;
+      font-size: 18px;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input::placeholder{color: rgba(233,255,246,.45)}
+    .row{display:flex; gap:10px}
+    .row > *{flex:1}
+
+    .seg{
+      display:flex;
+      gap:10px;
+      margin-top: 8px;
+    }
+    .seg button{
+      flex:1;
+      height:56px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      color: rgba(233,255,246,.55);
       font-size: 18px;
       font-weight: 800;
-      margin: 10px 2px 8px;
-      color: var(--text);
+      letter-spacing: .2px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.18);
+      /* iOS tap */
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    select,input{
-      width:100%;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.45);
-      color: var(--text);
-      padding: 14px 14px;
-      font-size: 20px;
-      outline:none;
+    .seg button.active{
+      background: rgba(28,154,98,.92);
+      border-color: rgba(67,226,159,.35);
+      color: #062a22;
     }
-    input::placeholder{color: rgba(234,247,243,.5);}
-    .dirGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 8px;
+
+    .actions{
+      display:flex;
+      gap:12px;
+      margin-top: 14px;
     }
-    .btn{
-      border:0;
+    .actions button{
+      flex:1;
+      height:64px;
       border-radius: 18px;
-      padding: 16px 14px;
+      border: none;
       font-size: 20px;
       font-weight: 900;
-      color: var(--btnText);
-      background: var(--btn);
-      box-shadow: 0 10px 18px rgba(0,0,0,.22);
-      cursor:pointer;
-      user-select:none;
+      letter-spacing:.2px;
+      color: #062a22;
+      background: linear-gradient(180deg, var(--btn), var(--btn2));
+      box-shadow: 0 12px 28px rgba(0,0,0,.25);
+      -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    .btn.secondary{background: rgba(255,255,255,.10); color: var(--text); border: 1px solid rgba(255,255,255,.14);}
-    .btn.dir{background: rgba(255,255,255,.08); color: var(--text); border: 1px solid rgba(255,255,255,.12);}
-    .btn.dir.active{background: var(--accent); color: var(--btnText); border-color: rgba(0,0,0,.0);}
-    .btn.warn{background: var(--accent2); color:#1f1702;}
-    .actions{display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;}
+    .actions button.secondary{
+      background: linear-gradient(180deg, #c9a200, #a88400);
+      color: #1f1a00;
+    }
+    .actions button.danger{
+      background: linear-gradient(180deg, #ff6a66, #d9534f);
+      color: #2b0908;
+    }
+
     .pill{
       display:inline-flex;
-      gap:10px;
       align-items:center;
+      gap:8px;
       padding: 10px 12px;
       border-radius: 999px;
-      font-size: 14px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(233,255,246,.85);
       font-weight: 800;
-      color: var(--muted);
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-      margin-top: 10px;
+      margin-top: 12px;
+      font-size: 13px;
     }
-    .pill strong{color: var(--text); font-weight: 900;}
-    .mini{
-      font-size:12px;
-      color: rgba(234,247,243,.65);
-      margin-top: 8px;
+    .muted{color: rgba(233,255,246,.65)}
+
+    h2{
+      margin: 4px 0 10px;
+      font-size: 22px;
+      font-weight: 950;
+      letter-spacing:.2px;
     }
-    .last{
-      margin-top: 14px;
-      padding: 12px 14px;
+    ul{
+      list-style: none;
+      padding: 0;
+      margin: 10px 0 0;
+    }
+    li{
+      padding: 10px 12px;
+      margin: 8px 0;
       border-radius: 16px;
-      background: rgba(0,0,0,.25);
       border: 1px solid rgba(255,255,255,.08);
-      color: var(--muted);
-      font-weight: 700;
+      background: rgba(0,0,0,.16);
+      font-weight: 800;
+      letter-spacing:.2px;
     }
-    .last strong{color: var(--text);}
-    footer{
-      text-align:center;
-      color: rgba(234,247,243,.55);
+    .small{
       font-size: 12px;
+      opacity:.8;
       margin-top: 8px;
+      line-height: 1.35;
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
-    <header>⛳️ Golf Log – Práctica <span class="sub">B7.0 base estable iOS (sin SW)</span></header>
+    <header>
+      <h1><span class="dot"></span> Golf Log – Práctica</h1>
+    </header>
 
-    <section class="card" id="app">
-      <label for="palo">Palo</label>
-      <select id="palo">
+    <section class="card">
+      <label for="clubSel">Palo</label>
+      <select id="clubSel">
         <option value="">Selecciona</option>
         <option>Driver</option>
         <option>3W</option>
         <option>5W</option>
         <option>3H</option>
         <option>4H</option>
-        <option>4i</option>
-        <option>5i</option>
-        <option>6i</option>
-        <option>7i</option>
-        <option>8i</option>
-        <option>9i</option>
+        <option>4I</option>
+        <option>5I</option>
+        <option>6I</option>
+        <option>7I</option>
+        <option>8I</option>
+        <option>9I</option>
         <option>PW</option>
-        <option>SW</option>
+        <option>GW</option>
+        <option>SW56</option>
         <option>LW</option>
         <option>Putter</option>
       </select>
 
-      <label>Dirección</label>
-      <div class="dirGrid" id="dirGrid">
-        <button class="btn dir" data-dir="Izq" type="button">Izq</button>
-        <button class="btn dir active" data-dir="Centro" type="button">Centro</button>
-        <button class="btn dir" data-dir="Der" type="button">Der</button>
-        <button class="btn dir secondary" data-dir="—" type="button">—</button>
-      </div>
+      <label for="distInput">Distancia (m)</label>
+      <input id="distInput" inputmode="numeric" placeholder="Ej. 183" />
 
-      <label for="dist">Distancia (m)</label>
-      <input id="dist" inputmode="numeric" pattern="[0-9]*" placeholder="Ej. 183" />
+      <label>Dirección</label>
+      <div class="seg" role="group" aria-label="Dirección">
+        <button id="dirIzqBtn" type="button" data-dir="Izq">Izq</button>
+        <button id="dirCentroBtn" type="button" data-dir="Centro" class="active">Centro</button>
+        <button id="dirDerBtn" type="button" data-dir="Der">Der</button>
+      </div>
 
       <div class="actions">
-        <button class="btn" id="guardarBtn" type="button">Guardar golpe</button>
-        <button class="btn warn" id="deshacerBtn" type="button">Deshacer</button>
+        <button id="guardarBtn" type="button">Guardar golpe</button>
+        <button id="deshacerBtn" type="button" class="secondary">Deshacer</button>
       </div>
 
-      <div class="pill"><span>JS:</span> <strong id="jsStatus">activo ✓</strong></div>
-
-      <div class="last" id="lastBox">Último: <strong id="lastText">—</strong></div>
-      <div class="mini">Se guarda localmente en el iPhone (localStorage). Sin Service Worker para evitar caches viejos.</div>
+      <div class="pill" id="statusPill">✅ JS activo · <span class="muted" id="versionTxt"></span></div>
+      <div class="small muted" id="lastTxt">Último: —</div>
     </section>
 
-    <footer>© Golf Log</footer>
+    <section class="card">
+      <h2>Histórico</h2>
+      <div class="actions">
+        <button id="borrarTodoBtn" type="button" class="danger">Borrar histórico</button>
+      </div>
+      <ul id="histList"></ul>
+      <div class="small muted">Guardado local en este iPhone (localStorage). Sin Service Worker.</div>
+    </section>
   </div>
 
-<script>
-(() => {
-  "use strict";
+  <script>
+    (function(){
+      "use strict";
 
-  const KEY = "golfLog_b70_shots";
-  const $ = (id) => document.getElementById(id);
+      const APP_VERSION = "B7.0-base-iOS-sinSW";
+      const LS_KEY = "golfLog_shots_v7";
 
-  const paloEl = $("palo");
-  const distEl = $("dist");
-  const lastText = $("lastText");
-  const dirGrid = $("dirGrid");
+      // --- helpers
+      const $ = (id) => document.getElementById(id);
+      const safeParse = (s, fallback) => { try { return JSON.parse(s); } catch { return fallback; } };
 
-  let dirActual = "Centro";
-  let shots = [];
-
-  function load() {
-    try {
-      const raw = localStorage.getItem(KEY);
-      shots = raw ? JSON.parse(raw) : [];
+      // --- state
+      let shots = safeParse(localStorage.getItem(LS_KEY), []);
       if (!Array.isArray(shots)) shots = [];
-    } catch {
-      shots = [];
-    }
-    renderLast();
-  }
+      let currentDir = "Centro";
 
-  function save() {
-    localStorage.setItem(KEY, JSON.stringify(shots));
-  }
+      // --- DOM
+      const clubSel = $("clubSel");
+      const distInput = $("distInput");
+      const lastTxt = $("lastTxt");
+      const histList = $("histList");
+      const versionTxt = $("versionTxt");
 
-  function renderLast() {
-    if (!shots.length) {
-      lastText.textContent = "—";
-      return;
-    }
-    const s = shots[shots.length - 1];
-    lastText.textContent = `${s.palo || "—"} – ${s.dist || "—"} m – ${s.dir || "—"}`;
-  }
+      const dirButtons = [
+        $("dirIzqBtn"),
+        $("dirCentroBtn"),
+        $("dirDerBtn")
+      ];
 
-  function setDir(dir) {
-    dirActual = dir;
-    for (const btn of dirGrid.querySelectorAll("button[data-dir]")) {
-      btn.classList.toggle("active", btn.dataset.dir === dir);
-    }
-  }
+      const guardarBtn = $("guardarBtn");
+      const deshacerBtn = $("deshacerBtn");
+      const borrarTodoBtn = $("borrarTodoBtn");
 
-  function guardar() {
-    const palo = (paloEl.value || "").trim();
-    const dist = (distEl.value || "").trim();
-    const distNum = Number(dist);
+      function persist(){
+        localStorage.setItem(LS_KEY, JSON.stringify(shots));
+      }
 
-    if (!palo) { alert("Selecciona un palo."); return; }
-    if (!dist || !Number.isFinite(distNum) || distNum <= 0) { alert("Ingresa una distancia válida."); return; }
+      function fmtShot(s){
+        return `${s.club} – ${s.dist} m – ${s.dir}`;
+      }
 
-    const shot = { ts: Date.now(), palo, dist: Math.round(distNum), dir: dirActual };
-    shots.push(shot);
-    save();
-    renderLast();
+      function render(){
+        // último
+        if (shots.length > 0){
+          lastTxt.textContent = "Último: " + fmtShot(shots[shots.length - 1]);
+        } else {
+          lastTxt.textContent = "Último: —";
+        }
 
-    distEl.value = "";
-    distEl.focus();
-  }
+        // lista (últimos 30)
+        histList.innerHTML = "";
+        const last = shots.slice(-30).reverse();
+        for (const s of last){
+          const li = document.createElement("li");
+          li.textContent = fmtShot(s);
+          histList.appendChild(li);
+        }
+      }
 
-  function deshacer() {
-    if (!shots.length) { alert("No hay golpes para deshacer."); return; }
-    shots.pop();
-    save();
-    renderLast();
-  }
+      function setDir(dir){
+        currentDir = dir;
+        for (const b of dirButtons){
+          b.classList.toggle("active", b.dataset.dir === dir);
+        }
+      }
 
-  // iOS-safe: delegación + touchstart
-  function onAction(e) {
-    const btn = e.target && e.target.closest ? e.target.closest("button") : null;
-    if (!btn) return;
+      function sanitizeDist(v){
+        // solo dígitos, máximo 3-4
+        const clean = String(v || "").replace(/[^\d]/g, "").slice(0, 4);
+        return clean;
+      }
 
-    const dir = btn.dataset && btn.dataset.dir;
-    if (dir) { setDir(dir); return; }
+      function handleSave(){
+        const club = clubSel.value.trim();
+        const dist = sanitizeDist(distInput.value);
 
-    if (btn.id === "guardarBtn") { guardar(); return; }
-    if (btn.id === "deshacerBtn") { deshacer(); return; }
-  }
+        if (!club){
+          alert("Selecciona un palo.");
+          return;
+        }
+        if (!dist || Number(dist) <= 0){
+          alert("Ingresa una distancia válida.");
+          return;
+        }
 
-  document.addEventListener("click", onAction, true);
-  document.addEventListener("touchstart", onAction, true);
+        shots.push({
+          club,
+          dist: Number(dist),
+          dir: currentDir,
+          ts: Date.now()
+        });
+        persist();
+        render();
 
-  load();
-  setDir("Centro");
-})();
-</script>
+        // mantener palo y dirección, limpiar solo distancia para velocidad
+        distInput.value = "";
+        distInput.focus({ preventScroll: true });
+      }
+
+      function handleUndo(){
+        if (shots.length === 0){
+          alert("No hay golpes para deshacer.");
+          return;
+        }
+        shots.pop();
+        persist();
+        render();
+      }
+
+      function handleClearAll(){
+        if (!confirm("¿Borrar TODO el histórico?")){
+          return;
+        }
+        shots = [];
+        persist();
+        render();
+      }
+
+      // --- iOS-safe binding
+      function bindTap(el, fn){
+        // En iOS Safari a veces click se “pierde” con overlays / fast taps.
+        // Usamos pointerdown si existe, si no touchstart + click.
+        const opts = { passive: false };
+
+        const wrapped = (e) => {
+          // importante para iOS: evitar que el evento “muera” por scroll/tap highlight
+          try { e.preventDefault(); } catch {}
+          try { e.stopPropagation(); } catch {}
+          fn();
+        };
+
+        if (window.PointerEvent){
+          el.addEventListener("pointerdown", wrapped, opts);
+        } else {
+          el.addEventListener("touchstart", wrapped, opts);
+          el.addEventListener("click", wrapped, false);
+        }
+      }
+
+      function init(){
+        versionTxt.textContent = APP_VERSION;
+
+        // dirección
+        for (const b of dirButtons){
+          bindTap(b, () => setDir(b.dataset.dir));
+        }
+        setDir("Centro");
+
+        // acciones
+        bindTap(guardarBtn, handleSave);
+        bindTap(deshacerBtn, handleUndo);
+        bindTap(borrarTodoBtn, handleClearAll);
+
+        // input: limpiar caracteres raros
+        distInput.addEventListener("input", () => {
+          const clean = sanitizeDist(distInput.value);
+          if (distInput.value !== clean) distInput.value = clean;
+        }, { passive: true });
+
+        render();
+      }
+
+      if (document.readyState === "loading"){
+        document.addEventListener("DOMContentLoaded", init, { once: true });
+      } else {
+        init();
+      }
+    })();
+  </script>
 </body>
 </html>
