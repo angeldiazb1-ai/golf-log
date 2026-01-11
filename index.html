@@ -282,6 +282,15 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin:20px 0;}
 <footer>Golf Log · B6.0 (reset seguro + respaldo JSON iOS) · PWA</footer>
 
 <script>
+/* ===== iOS Safari FIX: asegurar refs por id (no confiar en window.id) ===== */
+(function(){
+  const __ids = ["backupCard", "backupJson", "backupStatus", "barC", "barL", "barR", "clearBtn", "closeTargetsBtn", "clubStatsBody", "clubStatsCard", "copyBtn", "deshacerBtn", "direccionButtons", "dispBias", "dispC", "dispL", "dispR", "distancia", "editTargetsBtn", "exportBtn", "guardarBtn", "histViewButtons", "history", "importBtn", "modoButtons", "nuevaSesionBtn", "paloButtons", "resetAllBtn", "resetCard", "resetSessionBtn", "resetStatus", "saveTargetBtn", "sesionInfo", "targetClubInput", "targetClubSelect", "targetsPanel", "ultimoInfo", "zonaActual", "zonaPanel", "zonaSelect"];
+  for (const id of __ids){
+    const el = document.getElementById(id);
+    if (el) window[id] = el;
+  }
+})();
+
 // --- iOS Safari fix: bind DOM refs explicitly (do NOT rely on window[id] globals) ---
 const $ = (id) => document.getElementById(id);
 
